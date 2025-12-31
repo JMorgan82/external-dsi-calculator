@@ -41,13 +41,12 @@
     th { background:#0d1522; color:#b9c9e8; font-weight:700; }
     tr:last-child td { border-bottom:none; }
     .muted { color:var(--muted); }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #2a3a58; color:#b9c9e8; font-size: 12px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Downstream Injector Dilution Calculator</h1>
-    <p class="sub">Pick your DS injector type + machine GPM, enter your stock % and desired output %, then get exact batch mix recipes.</p>
+    <p class="sub">Choose your DS injector + GPM, enter stock % and desired output %, then get exact batch mix recipes.</p>
 
     <div class="nav">
       <a class="linkbtn" href="./index.html">External Injector (X-Jet/JOEJET/FIXFANS)</a>
@@ -79,7 +78,6 @@
 
       <div class="row">
         <button class="btn" id="calc">Calculate</button>
-        <span class="pill">Results = bucket/tank dilution recipes</span>
       </div>
 
       <div class="result" id="result" style="display:none;"></div>
@@ -87,29 +85,51 @@
     </div>
   </div>
 <script>
-  /***************************************************
-   * INJECTOR LIST (PLACEHOLDER)
-   * Replace this list with your exact DS injector list.
+  /**
+   * IMPORTANT NOTE SHOWN TO USERS (we're locking this in)
+   */
+  const DRAW_VARIANCE_NOTE = "Actual draw varies by hose length, injector condition, nozzle choice, temperature, and chemical viscosity.";
+
+  /**
+   * These are the 5 options you provided (locked for now).
+   * Ratios are Water:Chem = R:1
    *
-   * ratios are Water:Chem = R:1 and can vary by GPM.
-   * Example: ratios: { "4": 12 } means at 4 GPM the injector draws ~12:1
-   ***************************************************/
+   * For the orifice-size options (1.8 / 2.1 / 2.3):
+   * These are ESTIMATES to get the dilution math working end-to-end.
+   * You can later replace the ratios with measured draw data.
+   */
   const INJECTORS = [
     {
-      id: "general_ds",
-      name: "General DS Injector (baseline)",
-      ratios: { "2": 16, "3": 14, "4": 12, "5": 12, "6": 12, "7": 12, "8": 12, "9": 12, "10": 12 }
+      id: "supersuds",
+      name: "Super Suds Sucker (est. 30% draw)",
+      // 30% chem fraction -> R = (1/0.30) - 1 = 2.333...
+      // We'll only rate it for 4–10 GPM here (per common usage/orifice ranges).
+      ratios: { "4": 2.333, "5": 2.333, "6": 2.333, "7": 2.333, "8": 2.333, "9": 2.333, "10": 2.333 }
     },
     {
-      id: "high_draw",
-      name: "High-Draw DS Injector",
-      ratios: { "2": 12, "3": 10, "4": 8, "5": 8, "6": 8, "7": 8, "8": 8, "9": 8, "10": 8 }
+      id: "gp_100775",
+      name: "General Pump 100775 High Draw (fixed 20%)",
+      // 20% chem fraction -> R = (1/0.20) - 1 = 4
+      ratios: { "3": 4, "4": 4, "5": 4 }
     },
     {
-      id: "low_draw",
-      name: "Low-Draw DS Injector (safer/leaner)",
-      ratios: { "2": 20, "3": 20, "4": 20, "5": 20, "6": 20, "7": 20, "8": 20, "9": 20, "10": 20 }
-    }
+      id: "orifice_18",
+      name: "Standard DS Injector — Orifice 1.8 (est.)",
+      // ~10% chem fraction -> R = 9
+      ratios: { "2": 9, "3": 9, "4": 9, "5": 9, "6": 9, "7": 9, "8": 9, "9": 9, "10": 9 }
+    },
+    {
+      id: "orifice_21",
+      name: "Standard DS Injector — Orifice 2.1 (est.)",
+      // ~12.5% chem fraction -> R = 7
+      ratios: { "2": 7, "3": 7, "4": 7, "5": 7, "6": 7, "7": 7, "8": 7, "9": 7, "10": 7 }
+    },
+    {
+      id: "orifice_23",
+      name: "Standard DS Injector — Orifice 2.3 (est.)",
+      // ~15% chem fraction -> R = (1/0.15)-1 = 5.666...
+      ratios: { "2": 5.667, "3": 5.667, "4": 5.667, "5": 5.667, "6": 5.667, "7": 5.667, "8": 5.667, "9": 5.667, "10": 5.667 }
+    },
   ];
 
   const BATCH_SIZES_GAL = [1, 5, 10, 15, 20, 30, 55];
@@ -119,9 +139,7 @@
     return Math.round(n * p) / p;
   }
 
-  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-
-  // Output at gun when tank is T% and ratio is R:1
+  // Output% at gun when tank is T% and ratio is R:1
   function outputFromTankMix(tankPct, ratioR){
     return tankPct / (ratioR + 1);
   }
@@ -132,9 +150,9 @@
   }
 
   // Batch recipe for volume V gallons:
-  // tankMixPct = (chem_gal/V)*stockPct  => chem_gal = V * (tankMixPct/stockPct)
+  // tankMixPct = (chem_gal/V) * stockPct  => chem_gal = V * (tankMixPct/stockPct)
   function batchRecipeGallons(volumeGal, stockPct, requiredTankPct){
-    const fracChem = requiredTankPct / stockPct; // fraction of stock chem in tank
+    const fracChem = requiredTankPct / stockPct;
     const chemGal = volumeGal * fracChem;
     const waterGal = volumeGal - chemGal;
     return { chemGal, waterGal, fracChem };
@@ -152,6 +170,11 @@
 
   function getInjectorById(id){
     return INJECTORS.find(x => x.id === id) || INJECTORS[0];
+  }
+
+  function fmtRatio(r){
+    // show clean ratio number (2.333 -> 2.33)
+    return `${round(r, 3)}:1`;
   }
 
   function renderBatchTable(rows){
@@ -175,26 +198,39 @@
     `).join("");
     return header + body + `</tbody></table>`;
   }
-  function recommendWhenUnreachable({ stockPct, desiredPct, ratioR }){
-    const maxOutputIfStraight = outputFromTankMix(stockPct, ratioR);
+  function warnUnsupported(injectorName, gpm){
+    return `
+      <p class="big">GPM not rated for this injector</p>
+      <p class="small warn">
+        <strong>${injectorName}</strong> does not have a verified draw rate for <strong>${gpm} GPM</strong> in this calculator yet.
+      </p>
+      <p class="small">
+        Try a supported GPM range for this injector, or pick one of the “Standard DS Injector — Orifice” options.
+      </p>
+      <p class="small muted" style="margin-top:10px;">${DRAW_VARIANCE_NOTE}</p>
+    `;
+  }
 
-    // Non-pushy “what to do” options
-    const suggestions = [];
-
-    suggestions.push(`With this injector at ${ratioR}:1, the strongest you can hit using ${stockPct}% stock (straight) is ~${round(maxOutputIfStraight, 3)}%.`);
-
-    suggestions.push(`To reach ${desiredPct}%, you’d need a tank mix of ~${round(requiredTankMix(desiredPct, ratioR), 3)}% (stronger than your stock).`);
-
-    suggestions.push(`Options to reach your goal:`);
-    suggestions.push(`• Use a stronger starting chem (higher %), OR`);
-    suggestions.push(`• Switch to a higher-draw downstream injector (lower ratio), OR`);
-    suggestions.push(`• Use an external injector setup (X-Jet / pump-up / dedicated softwash), OR`);
-    suggestions.push(`• Lower desired output to ≤ ~${round(maxOutputIfStraight, 3)}% for this setup.`);
-
-    // “Organic product” suggestion (soft)
-    suggestions.push(`If you’re trying to avoid hotter bleach, consider a strong surfactant-based / “organic” cleaner and let dwell time do more work (especially on organics).`);
-
-    return suggestions;
+  function unreachableMsg({ stockPct, desiredPct, ratioR, injectorName, gpm }){
+    const maxOut = outputFromTankMix(stockPct, ratioR);
+    const reqTank = requiredTankMix(desiredPct, ratioR);
+    return `
+      <p class="big">Desired output is unreachable</p>
+      <p class="small warn" style="margin-bottom:10px;">
+        You want <strong>${round(desiredPct,3)}%</strong> at the gun, but with <strong>${round(stockPct,3)}%</strong> stock and a <strong>${fmtRatio(ratioR)}</strong> injector,
+        the max possible (running stock straight) is ~<strong>${round(maxOut,3)}%</strong>.
+      </p>
+      <p class="small">
+        To reach ${round(desiredPct,3)}%, you’d need a tank mix of ~<strong>${round(reqTank,3)}%</strong> (stronger than your stock).
+        <br/><br/>
+        <strong>Best options:</strong><br/>
+        • Use a stronger starting chemical, OR<br/>
+        • Use a higher-draw setup (lower ratio), OR<br/>
+        • Switch to an external method (X-Jet / dedicated softwash), OR<br/>
+        • Lower desired output to ≤ ~${round(maxOut,3)}% for this setup.
+      </p>
+      <p class="small muted" style="margin-top:10px;">${DRAW_VARIANCE_NOTE}</p>
+    `;
   }
 
   document.getElementById("calc").addEventListener("click", () => {
@@ -206,7 +242,6 @@
     const resultEl = document.getElementById("result");
     const tableWrap = document.getElementById("tableWrap");
 
-    // Validation
     if (!isFinite(stock) || stock <= 0 || stock > 100) {
       resultEl.style.display = "block";
       tableWrap.style.display = "none";
@@ -221,39 +256,30 @@
     }
 
     const injector = getInjectorById(injId);
+    const ratioR = injector.ratios[gpm];
 
-    // If injector has no ratio for that GPM, fall back to nearest available key
-    let ratioR = injector.ratios[gpm];
+    resultEl.style.display = "block";
+
+    // If we don't have a ratio for that GPM yet, show a clean warning.
     if (!isFinite(ratioR)) {
-      const keys = Object.keys(injector.ratios).map(Number).sort((a,b)=>a-b);
-      const target = Number(gpm);
-      let bestKey = keys[0];
-      let bestDiff = Infinity;
-      for (const k of keys) {
-        const d = Math.abs(k - target);
-        if (d < bestDiff) { bestDiff = d; bestKey = k; }
-      }
-      ratioR = injector.ratios[String(bestKey)];
+      tableWrap.style.display = "none";
+      resultEl.innerHTML = warnUnsupported(injector.name, gpm);
+      return;
     }
 
     const reqTank = requiredTankMix(desired, ratioR);
-    const maxOutputStraight = outputFromTankMix(stock, ratioR);
-
-    // Unreachable if required tank mix is stronger than stock
+    const maxOutStraight = outputFromTankMix(stock, ratioR);
     const unreachable = reqTank > stock + 1e-12;
 
-    resultEl.style.display = "block";
-    tableWrap.style.display = unreachable ? "none" : "block";
-
     if (unreachable) {
-      const lines = recommendWhenUnreachable({ stockPct: stock, desiredPct: desired, ratioR });
-      resultEl.innerHTML = `
-        <p class="big">Desired output is unreachable</p>
-        <p class="small warn" style="margin-bottom:10px;">
-          You want <strong>${round(desired,3)}%</strong> at the gun, but with <strong>${round(stock,3)}%</strong> stock and a <strong>${ratioR}:1</strong> injector, the max possible is ~<strong>${round(maxOutputStraight,3)}%</strong>.
-        </p>
-        <p class="small">${lines.map(x => x).join("<br/>")}</p>
-      `;
+      tableWrap.style.display = "none";
+      resultEl.innerHTML = unreachableMsg({
+        stockPct: stock,
+        desiredPct: desired,
+        ratioR,
+        injectorName: injector.name,
+        gpm
+      });
       return;
     }
 
@@ -266,15 +292,17 @@
     resultEl.innerHTML = `
       <p class="big">Mix your bucket/tank to: <span style="color:var(--accent)">${round(reqTank,3)}%</span></p>
       <p class="small">
-        That will output ~<strong>${round(desired,3)}%</strong> at the gun using <strong>${injector.name}</strong> at <strong>${gpm} GPM</strong> (~<strong>${ratioR}:1</strong>).
+        This targets ~<strong>${round(desired,3)}%</strong> at the gun using <strong>${injector.name}</strong> at <strong>${gpm} GPM</strong>
+        (estimated draw ~<strong>${fmtRatio(ratioR)}</strong>).
       </p>
+      <p class="small muted" style="margin-top:10px;">${DRAW_VARIANCE_NOTE}</p>
       <p class="small muted" style="margin-top:8px;">Batch Recipes (Same Setup)</p>
     `;
 
+    tableWrap.style.display = "block";
     tableWrap.innerHTML = renderBatchTable(batchRows);
   });
 
-  // init
   populateSelects();
 </script>
 </body>
