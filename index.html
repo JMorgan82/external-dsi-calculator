@@ -30,7 +30,6 @@
     tr:last-child td { border-bottom:none; }
     .muted { color:var(--muted); }
     .pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #2a3a58; color:#b9c9e8; font-size: 12px; }
-    .warn { color:#ffd18a; }
   </style>
 </head>
 <body>
@@ -88,6 +87,7 @@
         </div>
       </div>
 
+      <!-- NEW RESULTS (Simplified) -->
       <div class="result" id="result" style="display:none;"></div>
       <div class="table" id="tableWrap" style="display:none;"></div>
     </div>
@@ -119,8 +119,7 @@ const XJET = [
   { key:"PINK",  label:"PINK",  ratios:{2:280.0,3:353.0,4:500.0,5:480.0,6:766.0,8:906.0} },
 ];
 
-// JOEJET / FIXFANS alphabet models (from the screenshots) map to the same ratio set as XJET without OPEN.
-// A=GREY, B=BLACK, C=BEIGE, E=RED, F=WHITE, G=BLUE, H=TAN, J=GREEN, K=ORANGE, L=BROWN, M=YELLOW, N=AQUA, P=PURPLE, Q=PINK
+// JOEJET / FIXFANS alphabet models map to the same ratio set as XJET without OPEN.
 const ALPHA = [
   { key:"A", label:"A", ratios:{2:1.4,3:2.0,4:2.5,5:3.0,6:4.0,8:4.9} },
   { key:"B", label:"B", ratios:{2:3.0,3:4.0,4:5.0,5:6.5,6:8.0,8:11.0} },
@@ -135,7 +134,7 @@ const ALPHA = [
   { key:"M", label:"M", ratios:{2:70.0,3:96.0,4:128.0,5:158.0,6:191.0,8:215.0} },
   { key:"N", label:"N", ratios:{2:94.0,3:128.0,4:170.0,5:215.0,6:257.0,8:284.0} },
   { key:"P", label:"P", ratios:{2:146.0,3:200.0,4:240.0,5:300.0,6:400.0,8:501.0} },
-  { key:"Q", label:"Q", ratios:{2:280.0,3:383.0,4:500.0,5:480.0,6:766.0,8:906.0} }, // note: 3 GPM is 383-1 in the alphabet chart
+  { key:"Q", label:"Q", ratios:{2:280.0,3:383.0,4:500.0,5:480.0,6:766.0,8:906.0} },
 ];
 
 function getDataset(brand){
@@ -145,7 +144,7 @@ function getDataset(brand){
   return XJET;
 }
 
-function round(n, d=2){
+function round(n, d=3){
   const p = Math.pow(10,d);
   return Math.round(n*p)/p;
 }
@@ -183,37 +182,34 @@ function pickInsert(stockPct, desiredPct, gpm, dataset, mode){
   return { best: rows[0], rows, neverAbove:true, hadToGoAbove:true };
 }
 
-function renderTable(rows){
+function renderOutputsTable(rows, recommendedKey){
+  // Sort strongest -> weakest for quick scanning
+  const sorted = [...rows].sort((a,b) => b.output - a.output);
+
   const header = `
     <table>
       <thead>
         <tr>
           <th>Insert</th>
-          <th>Water:Chem</th>
-          <th>Expected Output %</th>
-          <th>Δ vs Desired</th>
+          <th>Approx Output %</th>
         </tr>
       </thead>
       <tbody>
   `;
-  const body = rows.map(r => {
-    const delta = r.output - currentDesired;
-    const sign = delta >= 0 ? "+" : "−";
+
+  const body = sorted.map(r => {
+    const isRec = r.key === recommendedKey;
     return `
       <tr>
-        <td><strong>${r.label}</strong></td>
-        <td>${r.ratio}:1</td>
-        <td>${round(r.output, 3)}%</td>
-        <td class="${Math.abs(delta) > 0.25 ? 'warn' : 'muted'}">${sign}${round(Math.abs(delta), 3)}%</td>
+        <td><strong>${isRec ? "✅ " : ""}${r.label}</strong></td>
+        <td><strong>${round(r.output, 3)}%</strong></td>
       </tr>
     `;
   }).join("");
+
   const footer = `</tbody></table>`;
   return header + body + footer;
 }
-
-// state for table delta coloring
-let currentDesired = 0;
 
 document.getElementById("calc").addEventListener("click", () => {
   const brand = document.getElementById("brand").value;
@@ -222,11 +218,10 @@ document.getElementById("calc").addEventListener("click", () => {
   const desired = Number(document.getElementById("desired").value);
   const mode = getMode();
 
-  currentDesired = desired;
-
   const resultEl = document.getElementById("result");
   const tableWrap = document.getElementById("tableWrap");
 
+  // Minimal validation (keep it clean)
   if (!isFinite(stock) || stock <= 0 || stock > 100) {
     resultEl.style.display = "block";
     tableWrap.style.display = "none";
@@ -241,41 +236,27 @@ document.getElementById("calc").addEventListener("click", () => {
   }
 
   const dataset = getDataset(brand);
-  const { best, rows, neverAbove, hadToGoAbove } = pickInsert(stock, desired, gpm, dataset, mode);
-
-  const expected = best.output;
-  const delta = expected - desired;
-  const sign = delta >= 0 ? "+" : "−";
-
-  // Reachability note
-  const maxOut = Math.max(...rows.map(r => r.output));
-  const minOut = Math.min(...rows.map(r => r.output));
-  let note = "";
-  if (desired > maxOut + 1e-12) {
-    note = `<p class="small warn">Desired % is higher than this injector can hit at ${gpm} GPM. Showing the strongest option available.</p>`;
-  } else if (desired < minOut - 1e-12) {
-    note = `<p class="small warn">Desired % is lower than this injector can hit at ${gpm} GPM. Showing the weakest option available.</p>`;
-  } else if (neverAbove && hadToGoAbove) {
-    note = `<p class="small warn">“Never above desired” couldn’t be satisfied (all options are above desired). Showing closest match.</p>`;
-  }
+  const { best, rows } = pickInsert(stock, desired, gpm, dataset, mode);
 
   const title = (brand === "xjet") ? "Recommended X-Jet Insert" : "Recommended Insert";
+
+  // NEW: simplified result (no Δ row, no overwhelm)
   resultEl.style.display = "block";
   tableWrap.style.display = "block";
+
   resultEl.innerHTML = `
     <p class="big">${title}: <span style="color:var(--accent)">${best.label}</span></p>
     <p class="small">
-      Expected output: <strong>${round(expected, 3)}%</strong>
-      <span class="muted">(Δ ${sign}${round(Math.abs(delta), 3)}%)</span><br/>
-      Ratio used: <strong>${best.ratio}:1</strong> (water:chemical) • Stock: <strong>${stock}%</strong> • GPM: <strong>${gpm}</strong>
+      Outputs ~<strong>${round(best.output, 3)}%</strong> using <strong>${stock}%</strong> stock on a <strong>${gpm}</strong> GPM machine.
     </p>
-    ${note}
+    <p class="small muted" style="margin-top:8px;">
+      Other Insert Outputs (Same Setup)
+    </p>
   `;
 
-  // show full table (sorted by insert strength)
-  const sortedByOutput = [...rows].sort((a,b) => b.output - a.output);
-  tableWrap.innerHTML = renderTable(sortedByOutput);
+  tableWrap.innerHTML = renderOutputsTable(rows, best.key);
 });
 </script>
 </body>
 </html>
+
