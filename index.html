@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>External Downstream Injector Calculator</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#121824; --text:#e7eefc; --muted:#9ab0d0; --line:#22304a; --accent:#63b3ff; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:linear-gradient(180deg,#070b10,#0b0f14); color:var(--text); }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+    h1 { margin: 0 0 8px; font-size: 22px; letter-spacing:.2px; }
+    .sub { color:var(--muted); margin:0 0 18px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width:720px){ .grid { grid-template-columns: 1fr 1fr; } }
+    label { display:block; font-size: 12px; color:var(--muted); margin:0 0 6px; }
+    select, input { width:100%; padding: 11px 12px; border-radius: 10px; border:1px solid var(--line); background:#0d1420; color:var(--text); outline:none; }
+    input::placeholder { color:#6f86ad; }
+    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; margin-top: 10px; }
+    .btn { cursor:pointer; border:1px solid #2a3a58; background:linear-gradient(180deg,#1a3c66,#12304f); color:var(--text); padding: 11px 14px; border-radius: 12px; font-weight: 600; }
+    .btn:hover { filter: brightness(1.06); }
+    .toggle { display:flex; gap:10px; align-items:center; color:var(--muted); font-size: 13px; }
+    .result { margin-top: 14px; padding: 14px; border-radius: 12px; border:1px dashed #2a3a58; background:#0a111c; }
+    .big { font-size: 18px; font-weight: 800; margin: 0 0 6px; }
+    .small { margin: 0; color:var(--muted); font-size: 13px; line-height:1.4; }
+    .table { margin-top: 12px; border:1px solid var(--line); border-radius: 12px; overflow:hidden; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding: 10px 10px; border-bottom:1px solid var(--line); text-align:left; font-size: 13px; }
+    th { background:#0d1522; color:#b9c9e8; font-weight:700; }
+    tr:last-child td { border-bottom:none; }
+    .muted { color:var(--muted); }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #2a3a58; color:#b9c9e8; font-size: 12px; }
+    .warn { color:#ffd18a; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>External Downstream Injector Calculator</h1>
+    <p class="sub">Choose your external injector type, enter your stock % + machine GPM + desired output %, then get the recommended insert.</p>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label for="brand">External Injector Type</label>
+          <select id="brand">
+            <option value="xjet">X-Jet (Color Inserts)</option>
+            <option value="joejet">JOEJET (Alphabet Inserts)</option>
+            <option value="fixfans">FIXFANS (Alphabet Inserts)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="gpm">Pressure Washer Flow (GPM)</label>
+          <select id="gpm">
+            <option value="2">2 GPM</option>
+            <option value="3">3 GPM</option>
+            <option value="4" selected>4 GPM</option>
+            <option value="5">5 GPM</option>
+            <option value="6">6 GPM</option>
+            <option value="8">8 GPM</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="stock">Stock Chemical Strength (%)</label>
+          <input id="stock" type="number" step="0.01" min="0" max="100" placeholder="Example: 12.5" value="12.5"/>
+        </div>
+
+        <div>
+          <label for="desired">Desired Output Strength (%)</label>
+          <input id="desired" type="number" step="0.01" min="0" max="100" placeholder="Example: 1.5" value="1.5"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="calc">Calculate</button>
+
+        <div class="toggle">
+          <span class="pill">Selection Mode</span>
+          <label style="display:flex;align-items:center;gap:6px;margin:0;">
+            <input type="radio" name="mode" value="closest" checked />
+            Closest
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;margin:0;">
+            <input type="radio" name="mode" value="neverAbove" />
+            Never above desired
+          </label>
+        </div>
+      </div>
+
+      <div class="result" id="result" style="display:none;"></div>
+      <div class="table" id="tableWrap" style="display:none;"></div>
+    </div>
+  </div>
+
+<script>
+/**
+ * DATA
+ * Ratios are Water:Chemical = R:1
+ * Output% = Stock% / (R + 1)
+ */
+
+// X-Jet color names (includes OPEN)
+const XJET = [
+  { key:"OPEN",  label:"OPEN",  ratios:{2:0.8, 3:1.2, 4:1.6, 5:2.0, 6:2.4, 8:3.0} },
+  { key:"GREY",  label:"GREY",  ratios:{2:1.4, 3:2.0, 4:2.5, 5:3.0, 6:4.0, 8:4.9} },
+  { key:"BLACK", label:"BLACK", ratios:{2:3.0, 3:4.0, 4:5.0, 5:6.5, 6:8.0, 8:11.0} },
+  { key:"BEIGE", label:"BEIGE", ratios:{2:6.0, 3:8.0, 4:10.0,5:13.0,6:16.0,8:20.0} },
+  { key:"RED",   label:"RED",   ratios:{2:9.0, 3:12.0,4:16.0,5:20.0,6:24.0,8:28.0} },
+  { key:"WHITE", label:"WHITE", ratios:{2:16.0,3:22.0,4:30.0,5:38.0,6:45.0,8:51.0} },
+  { key:"BLUE",  label:"BLUE",  ratios:{2:20.0,3:27.0,4:37.0,5:46.0,6:55.0,8:61.0} },
+  { key:"TAN",   label:"TAN (MED)", ratios:{2:28.0,3:38.0,4:50.0,5:64.0,6:77.0,8:85.0} },
+  { key:"GREEN", label:"GREEN", ratios:{2:31.0,3:42.0,4:57.0,5:70.0,6:85.0,8:90.0} },
+  { key:"ORANGE",label:"ORANGE",ratios:{2:35.0,3:48.0,4:64.0,5:80.0,6:96.0,8:102.0} },
+  { key:"BROWN", label:"BROWN", ratios:{2:48.0,3:66.0,4:88.0,5:110.0,6:133.0,8:145.0} },
+  { key:"YELLOW",label:"YELLOW",ratios:{2:70.0,3:96.0,4:128.0,5:158.0,6:191.0,8:215.0} },
+  { key:"AQUA",  label:"AQUA",  ratios:{2:94.0,3:128.0,4:170.0,5:215.0,6:257.0,8:284.0} },
+  { key:"PURPLE",label:"PURPLE",ratios:{2:146.0,3:200.0,4:240.0,5:300.0,6:400.0,8:501.0} },
+  { key:"PINK",  label:"PINK",  ratios:{2:280.0,3:353.0,4:500.0,5:480.0,6:766.0,8:906.0} },
+];
+
+// JOEJET / FIXFANS alphabet models (from the screenshots) map to the same ratio set as XJET without OPEN.
+// A=GREY, B=BLACK, C=BEIGE, E=RED, F=WHITE, G=BLUE, H=TAN, J=GREEN, K=ORANGE, L=BROWN, M=YELLOW, N=AQUA, P=PURPLE, Q=PINK
+const ALPHA = [
+  { key:"A", label:"A", ratios:{2:1.4,3:2.0,4:2.5,5:3.0,6:4.0,8:4.9} },
+  { key:"B", label:"B", ratios:{2:3.0,3:4.0,4:5.0,5:6.5,6:8.0,8:11.0} },
+  { key:"C", label:"C", ratios:{2:6.0,3:8.0,4:10.0,5:13.0,6:16.0,8:20.0} },
+  { key:"E", label:"E", ratios:{2:9.0,3:12.0,4:16.0,5:20.0,6:24.0,8:28.0} },
+  { key:"F", label:"F", ratios:{2:16.0,3:22.0,4:30.0,5:38.0,6:45.0,8:51.0} },
+  { key:"G", label:"G", ratios:{2:20.0,3:27.0,4:37.0,5:46.0,6:55.0,8:61.0} },
+  { key:"H", label:"H", ratios:{2:28.0,3:38.0,4:50.0,5:64.0,6:77.0,8:85.0} },
+  { key:"J", label:"J", ratios:{2:31.0,3:42.0,4:57.0,5:70.0,6:85.0,8:90.0} },
+  { key:"K", label:"K", ratios:{2:35.0,3:48.0,4:64.0,5:80.0,6:96.0,8:102.0} },
+  { key:"L", label:"L", ratios:{2:48.0,3:66.0,4:88.0,5:110.0,6:133.0,8:145.0} },
+  { key:"M", label:"M", ratios:{2:70.0,3:96.0,4:128.0,5:158.0,6:191.0,8:215.0} },
+  { key:"N", label:"N", ratios:{2:94.0,3:128.0,4:170.0,5:215.0,6:257.0,8:284.0} },
+  { key:"P", label:"P", ratios:{2:146.0,3:200.0,4:240.0,5:300.0,6:400.0,8:501.0} },
+  { key:"Q", label:"Q", ratios:{2:280.0,3:383.0,4:500.0,5:480.0,6:766.0,8:906.0} }, // note: 3 GPM is 383-1 in the alphabet chart
+];
+
+function getDataset(brand){
+  if (brand === "xjet") return XJET;
+  if (brand === "joejet") return ALPHA;
+  if (brand === "fixfans") return ALPHA;
+  return XJET;
+}
+
+function round(n, d=2){
+  const p = Math.pow(10,d);
+  return Math.round(n*p)/p;
+}
+
+function calcOutputPct(stockPct, ratioR){
+  return stockPct / (ratioR + 1);
+}
+
+function getMode(){
+  const modes = document.querySelectorAll('input[name="mode"]');
+  for (const m of modes) if (m.checked) return m.value;
+  return "closest";
+}
+
+function pickInsert(stockPct, desiredPct, gpm, dataset, mode){
+  const rows = dataset
+    .map(item => {
+      const r = item.ratios[gpm];
+      const out = calcOutputPct(stockPct, r);
+      const diff = out - desiredPct;
+      return { ...item, ratio:r, output:out, diff:diff, absDiff:Math.abs(diff) };
+    })
+    .sort((a,b) => a.absDiff - b.absDiff);
+
+  if (mode === "closest") {
+    return { best: rows[0], rows };
+  }
+
+  // neverAbove: choose the closest output <= desired, else fallback to closest overall
+  const candidates = rows.filter(x => x.output <= desiredPct + 1e-12);
+  if (candidates.length) {
+    candidates.sort((a,b) => Math.abs(a.diff) - Math.abs(b.diff));
+    return { best: candidates[0], rows, neverAbove:true };
+  }
+  return { best: rows[0], rows, neverAbove:true, hadToGoAbove:true };
+}
+
+function renderTable(rows){
+  const header = `
+    <table>
+      <thead>
+        <tr>
+          <th>Insert</th>
+          <th>Water:Chem</th>
+          <th>Expected Output %</th>
+          <th>Δ vs Desired</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  const body = rows.map(r => {
+    const delta = r.output - currentDesired;
+    const sign = delta >= 0 ? "+" : "−";
+    return `
+      <tr>
+        <td><strong>${r.label}</strong></td>
+        <td>${r.ratio}:1</td>
+        <td>${round(r.output, 3)}%</td>
+        <td class="${Math.abs(delta) > 0.25 ? 'warn' : 'muted'}">${sign}${round(Math.abs(delta), 3)}%</td>
+      </tr>
+    `;
+  }).join("");
+  const footer = `</tbody></table>`;
+  return header + body + footer;
+}
+
+// state for table delta coloring
+let currentDesired = 0;
+
+document.getElementById("calc").addEventListener("click", () => {
+  const brand = document.getElementById("brand").value;
+  const gpm = Number(document.getElementById("gpm").value);
+  const stock = Number(document.getElementById("stock").value);
+  const desired = Number(document.getElementById("desired").value);
+  const mode = getMode();
+
+  currentDesired = desired;
+
+  const resultEl = document.getElementById("result");
+  const tableWrap = document.getElementById("tableWrap");
+
+  if (!isFinite(stock) || stock <= 0 || stock > 100) {
+    resultEl.style.display = "block";
+    tableWrap.style.display = "none";
+    resultEl.innerHTML = `<p class="big">Check your stock %</p><p class="small">Enter a valid stock chemical strength between 0 and 100.</p>`;
+    return;
+  }
+  if (!isFinite(desired) || desired <= 0 || desired > 100) {
+    resultEl.style.display = "block";
+    tableWrap.style.display = "none";
+    resultEl.innerHTML = `<p class="big">Check your desired %</p><p class="small">Enter a valid desired output strength between 0 and 100.</p>`;
+    return;
+  }
+
+  const dataset = getDataset(brand);
+  const { best, rows, neverAbove, hadToGoAbove } = pickInsert(stock, desired, gpm, dataset, mode);
+
+  const expected = best.output;
+  const delta = expected - desired;
+  const sign = delta >= 0 ? "+" : "−";
+
+  // Reachability note
+  const maxOut = Math.max(...rows.map(r => r.output));
+  const minOut = Math.min(...rows.map(r => r.output));
+  let note = "";
+  if (desired > maxOut + 1e-12) {
+    note = `<p class="small warn">Desired % is higher than this injector can hit at ${gpm} GPM. Showing the strongest option available.</p>`;
+  } else if (desired < minOut - 1e-12) {
+    note = `<p class="small warn">Desired % is lower than this injector can hit at ${gpm} GPM. Showing the weakest option available.</p>`;
+  } else if (neverAbove && hadToGoAbove) {
+    note = `<p class="small warn">“Never above desired” couldn’t be satisfied (all options are above desired). Showing closest match.</p>`;
+  }
+
+  const title = (brand === "xjet") ? "Recommended X-Jet Insert" : "Recommended Insert";
+  resultEl.style.display = "block";
+  tableWrap.style.display = "block";
+  resultEl.innerHTML = `
+    <p class="big">${title}: <span style="color:var(--accent)">${best.label}</span></p>
+    <p class="small">
+      Expected output: <strong>${round(expected, 3)}%</strong>
+      <span class="muted">(Δ ${sign}${round(Math.abs(delta), 3)}%)</span><br/>
+      Ratio used: <strong>${best.ratio}:1</strong> (water:chemical) • Stock: <strong>${stock}%</strong> • GPM: <strong>${gpm}</strong>
+    </p>
+    ${note}
+  `;
+
+  // show full table (sorted by insert strength)
+  const sortedByOutput = [...rows].sort((a,b) => b.output - a.output);
+  tableWrap.innerHTML = renderTable(sortedByOutput);
+});
+</script>
+</body>
+</html>
