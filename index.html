@@ -32,6 +32,7 @@
     tr:last-child td { border-bottom:none; }
     .muted { color:var(--muted); }
     .pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #2a3a58; color:#b9c9e8; font-size: 12px; }
+    .notice { margin-top: 12px; padding: 12px; border-radius: 12px; border:1px solid var(--line); background:#0b1320; }
   </style>
 </head>
 <body>
@@ -44,14 +45,16 @@
         <div>
           <label for="brand">External Injector Type</label>
           <select id="brand">
-            <option value="xjet">X-Jet (Color Inserts)</option>
-            <option value="joejet">JOEJET (Alphabet Inserts)</option>
-            <option value="fixfans">FIXFANS (Alphabet Inserts)</option>
+            <!-- Updated labels: “identification/compatibility” style -->
+            <option value="xjet">X-Jet®-style (Color Inserts)</option>
+            <option value="joejet">JOEJET®-style (Alphabet Inserts)</option>
+            <option value="fixfans">FIXFANS®-style (Alphabet Inserts)</option>
           </select>
         </div>
 
         <div>
           <label for="gpm">Pressure Washer Flow (GPM)</label>
+          <!-- Keep only GPMs we have ratio data for -->
           <select id="gpm">
             <option value="2">2 GPM</option>
             <option value="3">3 GPM</option>
@@ -89,20 +92,29 @@
         </div>
       </div>
 
-      <!-- NEW RESULTS (Simplified) -->
+      <!-- RESULTS -->
       <div class="result" id="result" style="display:none;"></div>
       <div class="table" id="tableWrap" style="display:none;"></div>
+
+      <!-- Disclaimer -->
+      <div class="notice">
+        <p class="small" style="margin:0;">
+          <span class="pill">Disclaimer</span>
+          <span class="muted">
+            This tool is not affiliated with, endorsed by, or sponsored by any manufacturer. Brand names are used for identification/compatibility only.
+            Results are estimates and can vary by hose length, injector condition, nozzle choice, temperature, and chemical viscosity.
+          </span>
+        </p>
+      </div>
     </div>
   </div>
-
 <script>
 /**
- * DATA
  * Ratios are Water:Chemical = R:1
  * Output% = Stock% / (R + 1)
  */
 
-// X-Jet color names (includes OPEN)
+// X-Jet-style color names (includes OPEN)
 const XJET = [
   { key:"OPEN",  label:"OPEN",  ratios:{2:0.8, 3:1.2, 4:1.6, 5:2.0, 6:2.4, 8:3.0} },
   { key:"GREY",  label:"GREY",  ratios:{2:1.4, 3:2.0, 4:2.5, 5:3.0, 6:4.0, 8:4.9} },
@@ -121,7 +133,8 @@ const XJET = [
   { key:"PINK",  label:"PINK",  ratios:{2:280.0,3:353.0,4:500.0,5:480.0,6:766.0,8:906.0} },
 ];
 
-// JOEJET / FIXFANS alphabet models map to the same ratio set as XJET without OPEN.
+// Alphabet models map to the same ratio set as XJET without OPEN.
+// FIXED: Q at 3 GPM = 353.0 (matches PINK 3 GPM)
 const ALPHA = [
   { key:"A", label:"A", ratios:{2:1.4,3:2.0,4:2.5,5:3.0,6:4.0,8:4.9} },
   { key:"B", label:"B", ratios:{2:3.0,3:4.0,4:5.0,5:6.5,6:8.0,8:11.0} },
@@ -136,7 +149,7 @@ const ALPHA = [
   { key:"M", label:"M", ratios:{2:70.0,3:96.0,4:128.0,5:158.0,6:191.0,8:215.0} },
   { key:"N", label:"N", ratios:{2:94.0,3:128.0,4:170.0,5:215.0,6:257.0,8:284.0} },
   { key:"P", label:"P", ratios:{2:146.0,3:200.0,4:240.0,5:300.0,6:400.0,8:501.0} },
-  { key:"Q", label:"Q", ratios:{2:280.0,3:383.0,4:500.0,5:480.0,6:766.0,8:906.0} },
+  { key:"Q", label:"Q", ratios:{2:280.0,3:353.0,4:500.0,5:480.0,6:766.0,8:906.0} },
 ];
 
 function getDataset(brand){
@@ -172,16 +185,16 @@ function pickInsert(stockPct, desiredPct, gpm, dataset, mode){
     .sort((a,b) => a.absDiff - b.absDiff);
 
   if (mode === "closest") {
-    return { best: rows[0], rows };
+    return { best: rows[0], rows, meta: { mode:"closest" } };
   }
 
   // neverAbove: choose the closest output <= desired, else fallback to closest overall
   const candidates = rows.filter(x => x.output <= desiredPct + 1e-12);
   if (candidates.length) {
     candidates.sort((a,b) => Math.abs(a.diff) - Math.abs(b.diff));
-    return { best: candidates[0], rows, neverAbove:true };
+    return { best: candidates[0], rows, meta: { mode:"neverAbove", hadToGoAbove:false } };
   }
-  return { best: rows[0], rows, neverAbove:true, hadToGoAbove:true };
+  return { best: rows[0], rows, meta: { mode:"neverAbove", hadToGoAbove:true } };
 }
 
 function renderOutputsTable(rows, recommendedKey){
@@ -223,7 +236,6 @@ document.getElementById("calc").addEventListener("click", () => {
   const resultEl = document.getElementById("result");
   const tableWrap = document.getElementById("tableWrap");
 
-  // Minimal validation (keep it clean)
   if (!isFinite(stock) || stock <= 0 || stock > 100) {
     resultEl.style.display = "block";
     tableWrap.style.display = "none";
@@ -238,20 +250,24 @@ document.getElementById("calc").addEventListener("click", () => {
   }
 
   const dataset = getDataset(brand);
-  const { best, rows } = pickInsert(stock, desired, gpm, dataset, mode);
+  const { best, rows, meta } = pickInsert(stock, desired, gpm, dataset, mode);
 
-  const title = (brand === "xjet") ? "Recommended X-Jet Insert" : "Recommended Insert";
+  const title = (brand === "xjet") ? "Recommended Color Insert" : "Recommended Insert";
 
-  // NEW: simplified result (no Δ row, no overwhelm)
   resultEl.style.display = "block";
   tableWrap.style.display = "block";
+
+  const noteLine = (meta?.mode === "neverAbove" && meta?.hadToGoAbove)
+    ? `<p class="small muted" style="margin-top:8px;">Note: No insert matched at or below your desired %. Showing the closest available option.</p>`
+    : "";
 
   resultEl.innerHTML = `
     <p class="big">${title}: <span style="color:var(--accent)">${best.label}</span></p>
     <p class="small">
       Outputs ~<strong>${round(best.output, 3)}%</strong> using <strong>${stock}%</strong> stock on a <strong>${gpm}</strong> GPM machine.
     </p>
-    <p class="small muted" style="margin-top:8px;">
+    ${noteLine}
+    <p class="small muted" style="margin-top:10px;">
       Other Insert Outputs (Same Setup)
     </p>
   `;
@@ -261,4 +277,3 @@ document.getElementById("calc").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
