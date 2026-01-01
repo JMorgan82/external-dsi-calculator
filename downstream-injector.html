@@ -5,305 +5,198 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Downstream Injector Dilution Calculator</title>
   <style>
-    :root { --bg:#0b0f14; --card:#121824; --text:#e7eefc; --muted:#9ab0d0; --line:#22304a; --accent:#63b3ff; --warn:#ffd18a; }
+    :root {
+      --bg:#0b0f14; --card:#121824; --text:#e7eefc;
+      --muted:#9ab0d0; --line:#22304a;
+      --accent:#63b3ff; --warn:#ffd18a;
+    }
     *, *::before, *::after { box-sizing: border-box; }
 
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:linear-gradient(180deg,#070b10,#0b0f14); color:var(--text); }
+    body {
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#070b10,#0b0f14);
+      color:var(--text);
+    }
+
     .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
-    h1 { margin: 0 0 8px; font-size: 22px; letter-spacing:.2px; }
+    h1 { margin: 0 0 8px; font-size: 22px; }
     .sub { color:var(--muted); margin:0 0 18px; }
 
-    .nav { display:flex; gap:10px; flex-wrap:wrap; margin: 0 0 14px; }
-    .linkbtn { text-decoration:none; border:1px solid #2a3a58; background:#0d1420; color:var(--text); padding: 8px 10px; border-radius: 10px; font-size: 13px; }
-    .linkbtn:hover { filter: brightness(1.06); }
+    .nav { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .linkbtn {
+      text-decoration:none;
+      border:1px solid #2a3a58;
+      background:#0d1420;
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:13px;
+    }
 
-    .card { background:var(--card); border:1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
-    .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width:720px){ .grid { grid-template-columns: 1fr 1fr; } }
-    .grid > div { min-width:0; }
+    .card {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+    }
 
-    label { display:block; font-size: 12px; color:var(--muted); margin:0 0 6px; }
-    select, input { width:100%; padding: 11px 12px; border-radius: 10px; border:1px solid var(--line); background:#0d1420; color:var(--text); outline:none; }
-    input::placeholder { color:#6f86ad; }
+    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+    @media (min-width:720px){ .grid{ grid-template-columns:1fr 1fr; } }
 
-    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; margin-top: 10px; }
-    .btn { cursor:pointer; border:1px solid #2a3a58; background:linear-gradient(180deg,#1a3c66,#12304f); color:var(--text); padding: 11px 14px; border-radius: 12px; font-weight: 600; }
-    .btn:hover { filter: brightness(1.06); }
+    label { font-size:12px; color:var(--muted); }
+    select, input {
+      width:100%;
+      padding:11px 12px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#0d1420;
+      color:var(--text);
+    }
 
-    .result { margin-top: 14px; padding: 14px; border-radius: 12px; border:1px dashed #2a3a58; background:#0a111c; }
-    .big { font-size: 18px; font-weight: 800; margin: 0 0 6px; }
-    .small { margin: 0; color:var(--muted); font-size: 13px; line-height:1.45; }
-    .warn { color: var(--warn); }
+    .btn {
+      cursor:pointer;
+      border:1px solid #2a3a58;
+      background:linear-gradient(180deg,#1a3c66,#12304f);
+      color:var(--text);
+      padding:11px 14px;
+      border-radius:12px;
+      font-weight:600;
+    }
 
-    .table { margin-top: 12px; border:1px solid var(--line); border-radius: 12px; overflow:hidden; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding: 10px 10px; border-bottom:1px solid var(--line); text-align:left; font-size: 13px; }
-    th { background:#0d1522; color:#b9c9e8; font-weight:700; }
-    tr:last-child td { border-bottom:none; }
-    .muted { color:var(--muted); }
+    .result {
+      margin-top:14px;
+      padding:14px;
+      border-radius:12px;
+      border:1px dashed #2a3a58;
+      background:#0a111c;
+    }
+
+    .big { font-size:18px; font-weight:800; }
+    .small { font-size:13px; color:var(--muted); line-height:1.45; }
+    .warn { color:var(--warn); }
+
+    .table { margin-top:12px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
+    th { background:#0d1522; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Downstream Injector Dilution Calculator</h1>
-    <p class="sub">Choose your DS injector + GPM, enter stock % and desired output %, then get exact batch mix recipes.</p>
+    <p class="sub">
+      Choose your downstream injector + GPM, enter stock % and desired output %, then get batch mix recipes.
+    </p>
 
     <div class="nav">
-      <a class="linkbtn" href="./index.html">External Injector (X-Jet/JOEJET/FIXFANS)</a>
+      <a class="linkbtn" href="./index.html">External Injector Calculator</a>
       <a class="linkbtn" href="./downstream-injector.html">Regular Downstream Injector</a>
     </div>
 
     <div class="card">
       <div class="grid">
         <div>
-          <label for="inj">Downstream Injector Type</label>
+          <label>Downstream Injector Type</label>
           <select id="inj"></select>
         </div>
 
         <div>
-          <label for="gpm">Machine Flow (GPM)</label>
+          <label>Machine Flow (GPM)</label>
           <select id="gpm"></select>
         </div>
 
         <div>
-          <label for="stock">Stock Chemical Strength (%)</label>
-          <input id="stock" type="number" step="0.01" min="0" max="100" placeholder="Example: 12.5" value="12.5"/>
+          <label>Stock Chemical Strength (%)</label>
+          <input id="stock" type="number" value="12.5" />
         </div>
 
         <div>
-          <label for="desired">Desired Output at Gun (%)</label>
-          <input id="desired" type="number" step="0.01" min="0" max="100" placeholder="Example: 1.0" value="1.0"/>
+          <label>Desired Output at Gun (%)</label>
+          <input id="desired" type="number" value="1.0" />
         </div>
       </div>
 
-      <div class="row">
-        <button class="btn" id="calc">Calculate</button>
-      </div>
+      <button class="btn" id="calc">Calculate</button>
 
       <div class="result" id="result" style="display:none;"></div>
       <div class="table" id="tableWrap" style="display:none;"></div>
+
+      <p class="small" style="margin-top:12px;">
+        <strong>Disclaimer:</strong> Results are estimates. Actual draw varies by hose length, injector condition,
+        nozzle choice, temperature, and chemical viscosity. Brand names are used for identification only.
+      </p>
     </div>
   </div>
 <script>
-  /**
-   * IMPORTANT NOTE SHOWN TO USERS (we're locking this in)
-   */
-  const DRAW_VARIANCE_NOTE = "Actual draw varies by hose length, injector condition, nozzle choice, temperature, and chemical viscosity.";
+const DRAW_NOTE =
+  "Actual draw varies by hose length, injector condition, nozzle choice, temperature, and chemical viscosity.";
 
-  /**
-   * These are the 5 options you provided (locked for now).
-   * Ratios are Water:Chem = R:1
-   *
-   * For the orifice-size options (1.8 / 2.1 / 2.3):
-   * These are ESTIMATES to get the dilution math working end-to-end.
-   * You can later replace the ratios with measured draw data.
-   */
-  const INJECTORS = [
-    {
-      id: "supersuds",
-      name: "Super Suds Sucker (est. 30% draw)",
-      // 30% chem fraction -> R = (1/0.30) - 1 = 2.333...
-      // We'll only rate it for 4–10 GPM here (per common usage/orifice ranges).
-      ratios: { "4": 2.333, "5": 2.333, "6": 2.333, "7": 2.333, "8": 2.333, "9": 2.333, "10": 2.333 }
-    },
-    {
-      id: "gp_100775",
-      name: "General Pump 100775 High Draw (fixed 20%)",
-      // 20% chem fraction -> R = (1/0.20) - 1 = 4
-      ratios: { "3": 4, "4": 4, "5": 4 }
-    },
-    {
-      id: "orifice_18",
-      name: "Standard DS Injector — Orifice 1.8 (est.)",
-      // ~10% chem fraction -> R = 9
-      ratios: { "2": 9, "3": 9, "4": 9, "5": 9, "6": 9, "7": 9, "8": 9, "9": 9, "10": 9 }
-    },
-    {
-      id: "orifice_21",
-      name: "Standard DS Injector — Orifice 2.1 (est.)",
-      // ~12.5% chem fraction -> R = 7
-      ratios: { "2": 7, "3": 7, "4": 7, "5": 7, "6": 7, "7": 7, "8": 7, "9": 7, "10": 7 }
-    },
-    {
-      id: "orifice_23",
-      name: "Standard DS Injector — Orifice 2.3 (est.)",
-      // ~15% chem fraction -> R = (1/0.15)-1 = 5.666...
-      ratios: { "2": 5.667, "3": 5.667, "4": 5.667, "5": 5.667, "6": 5.667, "7": 5.667, "8": 5.667, "9": 5.667, "10": 5.667 }
-    },
-  ];
+const INJECTORS = [
+  { id:"supersuds", name:"Super Suds Sucker (est. 30%)", ratios:{4:2.333,5:2.333,6:2.333,7:2.333,8:2.333,9:2.333,10:2.333}},
+  { id:"gp", name:"General Pump High Draw (20%)", ratios:{3:4,4:4,5:4}},
+  { id:"o18", name:"Standard DS — Orifice 1.8", ratios:{2:9,3:9,4:9,5:9,6:9,7:9,8:9,9:9,10:9}},
+  { id:"o21", name:"Standard DS — Orifice 2.1", ratios:{2:7,3:7,4:7,5:7,6:7,7:7,8:7,9:7,10:7}},
+  { id:"o23", name:"Standard DS — Orifice 2.3", ratios:{2:5.667,3:5.667,4:5.667,5:5.667,6:5.667,7:5.667,8:5.667,9:5.667,10:5.667}}
+];
 
-  const BATCH_SIZES_GAL = [1, 5, 10, 15, 20, 30, 55];
+const BATCHES = [1,5,10,15,20,30,55];
 
-  function round(n, d = 2){
-    const p = Math.pow(10, d);
-    return Math.round(n * p) / p;
+function round(n,d=2){ return Math.round(n*10**d)/10**d; }
+
+function populate(){
+  inj.innerHTML = INJECTORS.map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
+  gpm.innerHTML = Array.from({length:9},(_,i)=>i+2)
+    .map(g=>`<option ${g===4?"selected":""}>${g}</option>`).join("");
+}
+
+function requiredTank(desired, ratio){ return desired*(ratio+1); }
+
+function batch(volume, stock, tank){
+  const chem = volume*(tank/stock);
+  return { volume, chem, water: volume-chem };
+}
+
+calc.onclick = () => {
+  const injector = INJECTORS.find(i=>i.id===inj.value);
+  const r = injector.ratios[gpm.value];
+  const stockVal = +stock.value;
+  const desiredVal = +desired.value;
+
+  if(!r){
+    result.style.display="block";
+    result.innerHTML = `<p class="big warn">Unsupported GPM</p><p class="small">${DRAW_NOTE}</p>`;
+    tableWrap.style.display="none";
+    return;
   }
 
-  // Output% at gun when tank is T% and ratio is R:1
-  function outputFromTankMix(tankPct, ratioR){
-    return tankPct / (ratioR + 1);
+  const tankPct = requiredTank(desiredVal, r);
+  if(tankPct > stockVal){
+    result.style.display="block";
+    result.innerHTML = `
+      <p class="big warn">Desired output unreachable</p>
+      <p class="small">Max possible ≈ ${round(stockVal/(r+1),3)}%</p>
+      <p class="small">${DRAW_NOTE}</p>`;
+    tableWrap.style.display="none";
+    return;
   }
 
-  // Required tank strength to achieve desired output at gun
-  function requiredTankMix(desiredPct, ratioR){
-    return desiredPct * (ratioR + 1);
-  }
+  result.style.display="block";
+  result.innerHTML = `
+    <p class="big">Mix tank to ${round(tankPct,3)}%</p>
+    <p class="small">${injector.name} @ ${gpm.value} GPM</p>
+    <p class="small">${DRAW_NOTE}</p>`;
 
-  // Batch recipe for volume V gallons:
-  // tankMixPct = (chem_gal/V) * stockPct  => chem_gal = V * (tankMixPct/stockPct)
-  function batchRecipeGallons(volumeGal, stockPct, requiredTankPct){
-    const fracChem = requiredTankPct / stockPct;
-    const chemGal = volumeGal * fracChem;
-    const waterGal = volumeGal - chemGal;
-    return { chemGal, waterGal, fracChem };
-  }
+  tableWrap.style.display="block";
+  tableWrap.innerHTML = `
+    <table><thead><tr><th>Batch</th><th>Chem (gal)</th><th>Water (gal)</th></tr></thead>
+    <tbody>${BATCHES.map(b=>{
+      const m=batch(b,stockVal,tankPct);
+      return `<tr><td>${b}</td><td>${round(m.chem)}</td><td>${round(m.water)}</td></tr>`;
+    }).join("")}</tbody></table>`;
+};
 
-  function populateSelects(){
-    const injSel = document.getElementById("inj");
-    injSel.innerHTML = INJECTORS.map(x => `<option value="${x.id}">${x.name}</option>`).join("");
-
-    const gpmSel = document.getElementById("gpm");
-    const gpms = [];
-    for (let i=2;i<=10;i++) gpms.push(i);
-    gpmSel.innerHTML = gpms.map(g => `<option value="${g}" ${g===4 ? "selected":""}>${g} GPM</option>`).join("");
-  }
-
-  function getInjectorById(id){
-    return INJECTORS.find(x => x.id === id) || INJECTORS[0];
-  }
-
-  function fmtRatio(r){
-    // show clean ratio number (2.333 -> 2.33)
-    return `${round(r, 3)}:1`;
-  }
-
-  function renderBatchTable(rows){
-    const header = `
-      <table>
-        <thead>
-          <tr>
-            <th>Batch Size</th>
-            <th>Stock Chem to Add (gal)</th>
-            <th>Water to Add (gal)</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-    const body = rows.map(r => `
-      <tr>
-        <td><strong>${r.volume} gal</strong></td>
-        <td><strong>${round(r.chemGal, 2)}</strong></td>
-        <td><strong>${round(r.waterGal, 2)}</strong></td>
-      </tr>
-    `).join("");
-    return header + body + `</tbody></table>`;
-  }
-  function warnUnsupported(injectorName, gpm){
-    return `
-      <p class="big">GPM not rated for this injector</p>
-      <p class="small warn">
-        <strong>${injectorName}</strong> does not have a verified draw rate for <strong>${gpm} GPM</strong> in this calculator yet.
-      </p>
-      <p class="small">
-        Try a supported GPM range for this injector, or pick one of the “Standard DS Injector — Orifice” options.
-      </p>
-      <p class="small muted" style="margin-top:10px;">${DRAW_VARIANCE_NOTE}</p>
-    `;
-  }
-
-  function unreachableMsg({ stockPct, desiredPct, ratioR, injectorName, gpm }){
-    const maxOut = outputFromTankMix(stockPct, ratioR);
-    const reqTank = requiredTankMix(desiredPct, ratioR);
-    return `
-      <p class="big">Desired output is unreachable</p>
-      <p class="small warn" style="margin-bottom:10px;">
-        You want <strong>${round(desiredPct,3)}%</strong> at the gun, but with <strong>${round(stockPct,3)}%</strong> stock and a <strong>${fmtRatio(ratioR)}</strong> injector,
-        the max possible (running stock straight) is ~<strong>${round(maxOut,3)}%</strong>.
-      </p>
-      <p class="small">
-        To reach ${round(desiredPct,3)}%, you’d need a tank mix of ~<strong>${round(reqTank,3)}%</strong> (stronger than your stock).
-        <br/><br/>
-        <strong>Best options:</strong><br/>
-        • Use a stronger starting chemical, OR<br/>
-        • Use a higher-draw setup (lower ratio), OR<br/>
-        • Switch to an external method (X-Jet / dedicated softwash), OR<br/>
-        • Lower desired output to ≤ ~${round(maxOut,3)}% for this setup.
-      </p>
-      <p class="small muted" style="margin-top:10px;">${DRAW_VARIANCE_NOTE}</p>
-    `;
-  }
-
-  document.getElementById("calc").addEventListener("click", () => {
-    const injId = document.getElementById("inj").value;
-    const gpm = String(document.getElementById("gpm").value);
-    const stock = Number(document.getElementById("stock").value);
-    const desired = Number(document.getElementById("desired").value);
-
-    const resultEl = document.getElementById("result");
-    const tableWrap = document.getElementById("tableWrap");
-
-    if (!isFinite(stock) || stock <= 0 || stock > 100) {
-      resultEl.style.display = "block";
-      tableWrap.style.display = "none";
-      resultEl.innerHTML = `<p class="big">Check your stock %</p><p class="small">Enter a valid stock chemical strength between 0 and 100.</p>`;
-      return;
-    }
-    if (!isFinite(desired) || desired <= 0 || desired > 100) {
-      resultEl.style.display = "block";
-      tableWrap.style.display = "none";
-      resultEl.innerHTML = `<p class="big">Check your desired %</p><p class="small">Enter a valid desired output strength between 0 and 100.</p>`;
-      return;
-    }
-
-    const injector = getInjectorById(injId);
-    const ratioR = injector.ratios[gpm];
-
-    resultEl.style.display = "block";
-
-    // If we don't have a ratio for that GPM yet, show a clean warning.
-    if (!isFinite(ratioR)) {
-      tableWrap.style.display = "none";
-      resultEl.innerHTML = warnUnsupported(injector.name, gpm);
-      return;
-    }
-
-    const reqTank = requiredTankMix(desired, ratioR);
-    const maxOutStraight = outputFromTankMix(stock, ratioR);
-    const unreachable = reqTank > stock + 1e-12;
-
-    if (unreachable) {
-      tableWrap.style.display = "none";
-      resultEl.innerHTML = unreachableMsg({
-        stockPct: stock,
-        desiredPct: desired,
-        ratioR,
-        injectorName: injector.name,
-        gpm
-      });
-      return;
-    }
-
-    // Build batch recipes
-    const batchRows = BATCH_SIZES_GAL.map(v => {
-      const { chemGal, waterGal } = batchRecipeGallons(v, stock, reqTank);
-      return { volume: v, chemGal, waterGal };
-    });
-
-    resultEl.innerHTML = `
-      <p class="big">Mix your bucket/tank to: <span style="color:var(--accent)">${round(reqTank,3)}%</span></p>
-      <p class="small">
-        This targets ~<strong>${round(desired,3)}%</strong> at the gun using <strong>${injector.name}</strong> at <strong>${gpm} GPM</strong>
-        (estimated draw ~<strong>${fmtRatio(ratioR)}</strong>).
-      </p>
-      <p class="small muted" style="margin-top:10px;">${DRAW_VARIANCE_NOTE}</p>
-      <p class="small muted" style="margin-top:8px;">Batch Recipes (Same Setup)</p>
-    `;
-
-    tableWrap.style.display = "block";
-    tableWrap.innerHTML = renderBatchTable(batchRows);
-  });
-
-  populateSelects();
+populate();
 </script>
 </body>
 </html>
