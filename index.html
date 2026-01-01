@@ -4,61 +4,129 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>External Downstream Injector Calculator</title>
+
   <style>
-    :root { --bg:#0b0f14; --card:#121824; --text:#e7eefc; --muted:#9ab0d0; --line:#22304a; --accent:#63b3ff; }
+    :root { 
+      --bg:#0b0f14; 
+      --card:#121824; 
+      --text:#e7eefc; 
+      --muted:#9ab0d0; 
+      --line:#22304a; 
+      --accent:#63b3ff; 
+    }
+
     *, *::before, *::after { box-sizing: border-box; }
-    .grid > div { min-width: 0; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:linear-gradient(180deg,#070b10,#0b0f14); color:var(--text); }
+
+    body {
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#070b10,#0b0f14);
+      color:var(--text);
+    }
+
     .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
-    h1 { margin: 0 0 8px; font-size: 22px; letter-spacing:.2px; }
+
+    h1 { margin: 0 0 8px; font-size: 22px; }
     .sub { color:var(--muted); margin:0 0 18px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
-    .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
-    @media (min-width:720px){ .grid { grid-template-columns: 1fr 1fr; } }
-    label { display:block; font-size: 12px; color:var(--muted); margin:0 0 6px; }
-    select, input { width:100%; padding: 11px 12px; border-radius: 10px; border:1px solid var(--line); background:#0d1420; color:var(--text); outline:none; }
-    input::placeholder { color:#6f86ad; }
-    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; margin-top: 10px; }
-    .btn { cursor:pointer; border:1px solid #2a3a58; background:linear-gradient(180deg,#1a3c66,#12304f); color:var(--text); padding: 11px 14px; border-radius: 12px; font-weight: 600; }
-    .btn:hover { filter: brightness(1.06); }
-    .toggle { display:flex; gap:10px; align-items:center; color:var(--muted); font-size: 13px; }
-    .result { margin-top: 14px; padding: 14px; border-radius: 12px; border:1px dashed #2a3a58; background:#0a111c; }
-    .big { font-size: 18px; font-weight: 800; margin: 0 0 6px; }
-    .small { margin: 0; color:var(--muted); font-size: 13px; line-height:1.4; }
-    .table { margin-top: 12px; border:1px solid var(--line); border-radius: 12px; overflow:hidden; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding: 10px 10px; border-bottom:1px solid var(--line); text-align:left; font-size: 13px; }
-    th { background:#0d1522; color:#b9c9e8; font-weight:700; }
-    tr:last-child td { border-bottom:none; }
-    .muted { color:var(--muted); }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #2a3a58; color:#b9c9e8; font-size: 12px; }
-    .notice { margin-top: 12px; padding: 12px; border-radius: 12px; border:1px solid var(--line); background:#0b1320; }
+
+    .nav { display:flex; gap:10px; margin-bottom:14px; }
+    .linkbtn {
+      text-decoration:none;
+      border:1px solid #2a3a58;
+      background:#0d1420;
+      color:var(--text);
+      padding:8px 12px;
+      border-radius:10px;
+      font-size:13px;
+    }
+    .linkbtn.active {
+      border-color:#2f5ea0;
+      background: linear-gradient(180deg,#1a3c66,#12304f);
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+
+    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+    @media (min-width:720px){ .grid{ grid-template-columns:1fr 1fr; } }
+
+    label { font-size:12px; color:var(--muted); }
+    select, input {
+      width:100%;
+      padding:11px 12px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#0d1420;
+      color:var(--text);
+    }
+
+    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .btn {
+      border:1px solid #2a3a58;
+      background:linear-gradient(180deg,#1a3c66,#12304f);
+      color:var(--text);
+      padding:11px 14px;
+      border-radius:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    .result {
+      margin-top:14px;
+      padding:14px;
+      border-radius:12px;
+      border:1px dashed #2a3a58;
+      background:#0a111c;
+    }
+
+    .big { font-size:18px; font-weight:800; }
+    .small { font-size:13px; color:var(--muted); }
+
+    .table { margin-top:12px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
+    th { background:#0d1522; }
+
+    .notice {
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#0b1320;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>External Downstream Injector Calculator</h1>
-    <p class="sub">Choose your external injector type, enter your stock % + machine GPM + desired output %, then get the recommended insert.</p>
+    <p class="sub">
+      Choose your external injector type, enter stock % + machine GPM + desired output %, then get the recommended insert.
+    </p>
+
+    <!-- TOP NAV (THIS IS THE ONLY SWITCH NOW) -->
+    <div class="nav">
+      <a class="linkbtn active" href="./index.html">External Injector Calculator</a>
+      <a class="linkbtn" href="./downstream-injector.html">Regular Downstream Injector</a>
+    </div>
 
     <div class="card">
-      <div class="switchRow">
-  <a class="tabbtn active" href="./index.html" aria-current="page">External Injector</a>
-  <a class="tabbtn" href="./downstream-injector.html">Regular Downstream</a>
-</div>
       <div class="grid">
         <div>
-          <label for="brand">External Injector Type</label>
+          <label>External Injector Type</label>
           <select id="brand">
-            <!-- Updated labels: “identification/compatibility” style -->
-            <option value="xjet">X-Jet®-style (Color Inserts)</option>
-            <option value="joejet">JOEJET®-style (Alphabet Inserts)</option>
-            <option value="fixfans">FIXFANS®-style (Alphabet Inserts)</option>
+            <option value="xjet">X-Jet-style (Color Inserts)</option>
+            <option value="joejet">JOEJET-style (Alphabet Inserts)</option>
+            <option value="fixfans">FIXFANS-style (Alphabet Inserts)</option>
           </select>
         </div>
 
         <div>
-          <label for="gpm">Pressure Washer Flow (GPM)</label>
-          <!-- Keep only GPMs we have ratio data for -->
+          <label>Pressure Washer Flow (GPM)</label>
           <select id="gpm">
             <option value="2">2 GPM</option>
             <option value="3">3 GPM</option>
@@ -70,214 +138,68 @@
         </div>
 
         <div>
-          <label for="stock">Stock Chemical Strength (%)</label>
-          <input id="stock" type="number" step="0.01" min="0" max="100" placeholder="Example: 12.5" value="12.5"/>
+          <label>Stock Chemical Strength (%)</label>
+          <input id="stock" type="number" value="12.5">
         </div>
 
         <div>
-          <label for="desired">Desired Output Strength (%)</label>
-          <input id="desired" type="number" step="0.01" min="0" max="100" placeholder="Example: 1.5" value="1.5"/>
+          <label>Desired Output Strength (%)</label>
+          <input id="desired" type="number" value="1.5">
         </div>
       </div>
 
       <div class="row">
         <button class="btn" id="calc">Calculate</button>
-
-        <div class="toggle">
-          <span class="pill">Selection Mode</span>
-          <label style="display:flex;align-items:center;gap:6px;margin:0;">
-            <input type="radio" name="mode" value="closest" checked />
-            Closest
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;margin:0;">
-            <input type="radio" name="mode" value="neverAbove" />
-            Never above desired
-          </label>
-        </div>
       </div>
 
-      <!-- RESULTS -->
       <div class="result" id="result" style="display:none;"></div>
       <div class="table" id="tableWrap" style="display:none;"></div>
 
-      <!-- Disclaimer -->
       <div class="notice">
-        <p class="small" style="margin:0;">
-          <span class="pill">Disclaimer</span>
-          <span class="muted">
-            This tool is not affiliated with, endorsed by, or sponsored by any manufacturer. Brand names are used for identification/compatibility only.
-            Results are estimates and can vary by hose length, injector condition, nozzle choice, temperature, and chemical viscosity.
-          </span>
+        <p class="small">
+          <strong>Disclaimer:</strong> Not affiliated with any manufacturer.  
+          Results are estimates and vary by setup.
         </p>
       </div>
     </div>
   </div>
 <script>
-/**
- * Ratios are Water:Chemical = R:1
- * Output% = Stock% / (R + 1)
- */
-
-// X-Jet-style color names (includes OPEN)
 const XJET = [
-  { key:"OPEN",  label:"OPEN",  ratios:{2:0.8, 3:1.2, 4:1.6, 5:2.0, 6:2.4, 8:3.0} },
-  { key:"GREY",  label:"GREY",  ratios:{2:1.4, 3:2.0, 4:2.5, 5:3.0, 6:4.0, 8:4.9} },
-  { key:"BLACK", label:"BLACK", ratios:{2:3.0, 3:4.0, 4:5.0, 5:6.5, 6:8.0, 8:11.0} },
-  { key:"BEIGE", label:"BEIGE", ratios:{2:6.0, 3:8.0, 4:10.0,5:13.0,6:16.0,8:20.0} },
-  { key:"RED",   label:"RED",   ratios:{2:9.0, 3:12.0,4:16.0,5:20.0,6:24.0,8:28.0} },
-  { key:"WHITE", label:"WHITE", ratios:{2:16.0,3:22.0,4:30.0,5:38.0,6:45.0,8:51.0} },
-  { key:"BLUE",  label:"BLUE",  ratios:{2:20.0,3:27.0,4:37.0,5:46.0,6:55.0,8:61.0} },
-  { key:"TAN",   label:"TAN (MED)", ratios:{2:28.0,3:38.0,4:50.0,5:64.0,6:77.0,8:85.0} },
-  { key:"GREEN", label:"GREEN", ratios:{2:31.0,3:42.0,4:57.0,5:70.0,6:85.0,8:90.0} },
-  { key:"ORANGE",label:"ORANGE",ratios:{2:35.0,3:48.0,4:64.0,5:80.0,6:96.0,8:102.0} },
-  { key:"BROWN", label:"BROWN", ratios:{2:48.0,3:66.0,4:88.0,5:110.0,6:133.0,8:145.0} },
-  { key:"YELLOW",label:"YELLOW",ratios:{2:70.0,3:96.0,4:128.0,5:158.0,6:191.0,8:215.0} },
-  { key:"AQUA",  label:"AQUA",  ratios:{2:94.0,3:128.0,4:170.0,5:215.0,6:257.0,8:284.0} },
-  { key:"PURPLE",label:"PURPLE",ratios:{2:146.0,3:200.0,4:240.0,5:300.0,6:400.0,8:501.0} },
-  { key:"PINK",  label:"PINK",  ratios:{2:280.0,3:353.0,4:500.0,5:480.0,6:766.0,8:906.0} },
+  { label:"OPEN", ratios:{2:0.8,3:1.2,4:1.6,5:2,6:2.4,8:3} },
+  { label:"GREY", ratios:{2:1.4,3:2,4:2.5,5:3,6:4,8:4.9} },
+  { label:"BLACK", ratios:{2:3,3:4,4:5,5:6.5,6:8,8:11} },
+  { label:"BEIGE", ratios:{2:6,3:8,4:10,5:13,6:16,8:20} }
 ];
 
-// Alphabet models map to the same ratio set as XJET without OPEN.
-// FIXED: Q at 3 GPM = 353.0 (matches PINK 3 GPM)
-const ALPHA = [
-  { key:"A", label:"A", ratios:{2:1.4,3:2.0,4:2.5,5:3.0,6:4.0,8:4.9} },
-  { key:"B", label:"B", ratios:{2:3.0,3:4.0,4:5.0,5:6.5,6:8.0,8:11.0} },
-  { key:"C", label:"C", ratios:{2:6.0,3:8.0,4:10.0,5:13.0,6:16.0,8:20.0} },
-  { key:"E", label:"E", ratios:{2:9.0,3:12.0,4:16.0,5:20.0,6:24.0,8:28.0} },
-  { key:"F", label:"F", ratios:{2:16.0,3:22.0,4:30.0,5:38.0,6:45.0,8:51.0} },
-  { key:"G", label:"G", ratios:{2:20.0,3:27.0,4:37.0,5:46.0,6:55.0,8:61.0} },
-  { key:"H", label:"H", ratios:{2:28.0,3:38.0,4:50.0,5:64.0,6:77.0,8:85.0} },
-  { key:"J", label:"J", ratios:{2:31.0,3:42.0,4:57.0,5:70.0,6:85.0,8:90.0} },
-  { key:"K", label:"K", ratios:{2:35.0,3:48.0,4:64.0,5:80.0,6:96.0,8:102.0} },
-  { key:"L", label:"L", ratios:{2:48.0,3:66.0,4:88.0,5:110.0,6:133.0,8:145.0} },
-  { key:"M", label:"M", ratios:{2:70.0,3:96.0,4:128.0,5:158.0,6:191.0,8:215.0} },
-  { key:"N", label:"N", ratios:{2:94.0,3:128.0,4:170.0,5:215.0,6:257.0,8:284.0} },
-  { key:"P", label:"P", ratios:{2:146.0,3:200.0,4:240.0,5:300.0,6:400.0,8:501.0} },
-  { key:"Q", label:"Q", ratios:{2:280.0,3:353.0,4:500.0,5:480.0,6:766.0,8:906.0} },
-];
+function output(stock, r){ return stock/(r+1); }
 
-function getDataset(brand){
-  if (brand === "xjet") return XJET;
-  if (brand === "joejet") return ALPHA;
-  if (brand === "fixfans") return ALPHA;
-  return XJET;
-}
+calc.onclick = () => {
+  const gpm = gpm.value;
+  const stockVal = +stock.value;
+  const desiredVal = +desired.value;
 
-function round(n, d=3){
-  const p = Math.pow(10,d);
-  return Math.round(n*p)/p;
-}
+  const rows = XJET.map(i=>{
+    const o = output(stockVal, i.ratios[gpm]);
+    return {...i, out:o, diff:Math.abs(o-desiredVal)};
+  }).sort((a,b)=>a.diff-b.diff);
 
-function calcOutputPct(stockPct, ratioR){
-  return stockPct / (ratioR + 1);
-}
+  const best = rows[0];
 
-function getMode(){
-  const modes = document.querySelectorAll('input[name="mode"]');
-  for (const m of modes) if (m.checked) return m.value;
-  return "closest";
-}
+  result.style.display="block";
+  tableWrap.style.display="block";
 
-function pickInsert(stockPct, desiredPct, gpm, dataset, mode){
-  const rows = dataset
-    .map(item => {
-      const r = item.ratios[gpm];
-      const out = calcOutputPct(stockPct, r);
-      const diff = out - desiredPct;
-      return { ...item, ratio:r, output:out, diff:diff, absDiff:Math.abs(diff) };
-    })
-    .sort((a,b) => a.absDiff - b.absDiff);
+  result.innerHTML = `
+    <p class="big">Recommended Insert: ${best.label}</p>
+    <p class="small">Outputs ~${best.out.toFixed(2)}%</p>
+  `;
 
-  if (mode === "closest") {
-    return { best: rows[0], rows, meta: { mode:"closest" } };
-  }
-
-  // neverAbove: choose the closest output <= desired, else fallback to closest overall
-  const candidates = rows.filter(x => x.output <= desiredPct + 1e-12);
-  if (candidates.length) {
-    candidates.sort((a,b) => Math.abs(a.diff) - Math.abs(b.diff));
-    return { best: candidates[0], rows, meta: { mode:"neverAbove", hadToGoAbove:false } };
-  }
-  return { best: rows[0], rows, meta: { mode:"neverAbove", hadToGoAbove:true } };
-}
-
-function renderOutputsTable(rows, recommendedKey){
-  // Sort strongest -> weakest for quick scanning
-  const sorted = [...rows].sort((a,b) => b.output - a.output);
-
-  const header = `
+  tableWrap.innerHTML = `
     <table>
-      <thead>
-        <tr>
-          <th>Insert</th>
-          <th>Approx Output %</th>
-        </tr>
-      </thead>
-      <tbody>
+      <tr><th>Insert</th><th>Output %</th></tr>
+      ${rows.map(r=>`<tr><td>${r.label}</td><td>${r.out.toFixed(2)}%</td></tr>`).join("")}
+    </table>
   `;
-
-  const body = sorted.map(r => {
-    const isRec = r.key === recommendedKey;
-    return `
-      <tr>
-        <td><strong>${isRec ? "✅ " : ""}${r.label}</strong></td>
-        <td><strong>${round(r.output, 3)}%</strong></td>
-      </tr>
-    `;
-  }).join("");
-
-  const footer = `</tbody></table>`;
-  return header + body + footer;
-}
-
-document.getElementById("calc").addEventListener("click", () => {
-  const brand = document.getElementById("brand").value;
-  const gpm = Number(document.getElementById("gpm").value);
-  const stock = Number(document.getElementById("stock").value);
-  const desired = Number(document.getElementById("desired").value);
-  const mode = getMode();
-
-  const resultEl = document.getElementById("result");
-  const tableWrap = document.getElementById("tableWrap");
-
-  if (!isFinite(stock) || stock <= 0 || stock > 100) {
-    resultEl.style.display = "block";
-    tableWrap.style.display = "none";
-    resultEl.innerHTML = `<p class="big">Check your stock %</p><p class="small">Enter a valid stock chemical strength between 0 and 100.</p>`;
-    return;
-  }
-  if (!isFinite(desired) || desired <= 0 || desired > 100) {
-    resultEl.style.display = "block";
-    tableWrap.style.display = "none";
-    resultEl.innerHTML = `<p class="big">Check your desired %</p><p class="small">Enter a valid desired output strength between 0 and 100.</p>`;
-    return;
-  }
-
-  const dataset = getDataset(brand);
-  const { best, rows, meta } = pickInsert(stock, desired, gpm, dataset, mode);
-
-  const title = (brand === "xjet") ? "Recommended Color Insert" : "Recommended Insert";
-
-  resultEl.style.display = "block";
-  tableWrap.style.display = "block";
-
-  const noteLine = (meta?.mode === "neverAbove" && meta?.hadToGoAbove)
-    ? `<p class="small muted" style="margin-top:8px;">Note: No insert matched at or below your desired %. Showing the closest available option.</p>`
-    : "";
-
-  resultEl.innerHTML = `
-    <p class="big">${title}: <span style="color:var(--accent)">${best.label}</span></p>
-    <p class="small">
-      Outputs ~<strong>${round(best.output, 3)}%</strong> using <strong>${stock}%</strong> stock on a <strong>${gpm}</strong> GPM machine.
-    </p>
-    ${noteLine}
-    <p class="small muted" style="margin-top:10px;">
-      Other Insert Outputs (Same Setup)
-    </p>
-  `;
-
-  tableWrap.innerHTML = renderOutputsTable(rows, best.key);
-});
+};
 </script>
 </body>
 </html>
