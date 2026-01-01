@@ -33,12 +33,18 @@
       border-radius:10px;
       font-size:13px;
     }
+    .linkbtn:hover { filter: brightness(1.06); }
+    .linkbtn.active {
+      border-color:#2f5ea0;
+      background: linear-gradient(180deg,#1a3c66,#12304f);
+    }
 
     .card {
       background:var(--card);
       border:1px solid var(--line);
       border-radius:14px;
       padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
     }
 
     .grid { display:grid; grid-template-columns:1fr; gap:12px; }
@@ -52,6 +58,7 @@
       border:1px solid var(--line);
       background:#0d1420;
       color:var(--text);
+      outline:none;
     }
 
     .btn {
@@ -62,7 +69,9 @@
       padding:11px 14px;
       border-radius:12px;
       font-weight:600;
+      margin-top:10px;
     }
+    .btn:hover { filter: brightness(1.06); }
 
     .result {
       margin-top:14px;
@@ -72,14 +81,15 @@
       background:#0a111c;
     }
 
-    .big { font-size:18px; font-weight:800; }
-    .small { font-size:13px; color:var(--muted); line-height:1.45; }
+    .big { font-size:18px; font-weight:800; margin:0 0 6px; }
+    .small { font-size:13px; color:var(--muted); line-height:1.45; margin:0; }
     .warn { color:var(--warn); }
 
     .table { margin-top:12px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
     table { width:100%; border-collapse:collapse; }
-    th, td { padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
+    th, td { padding:10px; border-bottom:1px solid var(--line); font-size:13px; text-align:left; }
     th { background:#0d1522; }
+    tr:last-child td { border-bottom:none; }
   </style>
 </head>
 <body>
@@ -89,17 +99,13 @@
       Choose your downstream injector + GPM, enter stock % and desired output %, then get batch mix recipes.
     </p>
 
+    <!-- TOP NAV (only switch) -->
     <div class="nav">
       <a class="linkbtn" href="./index.html">External Injector Calculator</a>
-      <a class="linkbtn" href="./downstream-injector.html">Regular Downstream Injector</a>
+      <a class="linkbtn active" href="./downstream-injector.html" aria-current="page">Regular Downstream Injector</a>
     </div>
 
     <div class="card">
-      <div class="switchRow">
-  <a class="tabbtn" href="./index.html">External Injector</a>
-  <a class="tabbtn active" href="./downstream-injector.html" aria-current="page">Regular Downstream</a>
-</div>
-
       <div class="grid">
         <div>
           <label>Downstream Injector Type</label>
@@ -113,12 +119,12 @@
 
         <div>
           <label>Stock Chemical Strength (%)</label>
-          <input id="stock" type="number" value="12.5" />
+          <input id="stock" type="number" step="0.01" min="0" max="100" value="12.5" />
         </div>
 
         <div>
           <label>Desired Output at Gun (%)</label>
-          <input id="desired" type="number" value="1.0" />
+          <input id="desired" type="number" step="0.01" min="0" max="100" value="1.0" />
         </div>
       </div>
 
@@ -150,9 +156,16 @@ const BATCHES = [1,5,10,15,20,30,55];
 function round(n,d=2){ return Math.round(n*10**d)/10**d; }
 
 function populate(){
-  inj.innerHTML = INJECTORS.map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
-  gpm.innerHTML = Array.from({length:9},(_,i)=>i+2)
-    .map(g=>`<option ${g===4?"selected":""}>${g}</option>`).join("");
+  const injSel = document.getElementById("inj");
+  const gpmSel = document.getElementById("gpm");
+
+  injSel.innerHTML = INJECTORS
+    .map(i=>`<option value="${i.id}">${i.name}</option>`)
+    .join("");
+
+  gpmSel.innerHTML = Array.from({length:9},(_,i)=>i+2)
+    .map(g=>`<option value="${g}" ${g===4?"selected":""}>${g}</option>`)
+    .join("");
 }
 
 function requiredTank(desired, ratio){ return desired*(ratio+1); }
@@ -162,44 +175,84 @@ function batch(volume, stock, tank){
   return { volume, chem, water: volume-chem };
 }
 
-calc.onclick = () => {
-  const injector = INJECTORS.find(i=>i.id===inj.value);
-  const r = injector.ratios[gpm.value];
-  const stockVal = +stock.value;
-  const desiredVal = +desired.value;
+document.getElementById("calc").addEventListener("click", () => {
+  const injId = document.getElementById("inj").value;
+  const gpmVal = document.getElementById("gpm").value;
+  const stockVal = Number(document.getElementById("stock").value);
+  const desiredVal = Number(document.getElementById("desired").value);
 
-  if(!r){
-    result.style.display="block";
-    result.innerHTML = `<p class="big warn">Unsupported GPM</p><p class="small">${DRAW_NOTE}</p>`;
-    tableWrap.style.display="none";
+  const resultEl = document.getElementById("result");
+  const tableWrap = document.getElementById("tableWrap");
+
+  const injector = INJECTORS.find(i=>i.id===injId) || INJECTORS[0];
+  const r = injector.ratios[gpmVal];
+
+  // Basic input validation
+  if (!isFinite(stockVal) || stockVal <= 0 || stockVal > 100) {
+    resultEl.style.display = "block";
+    tableWrap.style.display = "none";
+    resultEl.innerHTML = `<p class="big">Check your stock %</p><p class="small">Enter a valid stock chemical strength between 0 and 100.</p>`;
+    return;
+  }
+  if (!isFinite(desiredVal) || desiredVal <= 0 || desiredVal > 100) {
+    resultEl.style.display = "block";
+    tableWrap.style.display = "none";
+    resultEl.innerHTML = `<p class="big">Check your desired %</p><p class="small">Enter a valid desired output strength between 0 and 100.</p>`;
+    return;
+  }
+
+  // Unsupported GPM for this injector
+  if (!isFinite(r)) {
+    resultEl.style.display = "block";
+    resultEl.innerHTML = `<p class="big warn">Unsupported GPM</p><p class="small">${DRAW_NOTE}</p>`;
+    tableWrap.style.display = "none";
     return;
   }
 
   const tankPct = requiredTank(desiredVal, r);
-  if(tankPct > stockVal){
-    result.style.display="block";
-    result.innerHTML = `
+
+  // Unreachable target
+  if (tankPct > stockVal + 1e-12) {
+    const maxOut = stockVal/(r+1);
+    resultEl.style.display = "block";
+    resultEl.innerHTML = `
       <p class="big warn">Desired output unreachable</p>
-      <p class="small">Max possible ≈ ${round(stockVal/(r+1),3)}%</p>
-      <p class="small">${DRAW_NOTE}</p>`;
-    tableWrap.style.display="none";
+      <p class="small">Max possible (running stock straight) ≈ <strong>${round(maxOut,3)}%</strong></p>
+      <p class="small">${DRAW_NOTE}</p>
+    `;
+    tableWrap.style.display = "none";
     return;
   }
 
-  result.style.display="block";
-  result.innerHTML = `
-    <p class="big">Mix tank to ${round(tankPct,3)}%</p>
-    <p class="small">${injector.name} @ ${gpm.value} GPM</p>
-    <p class="small">${DRAW_NOTE}</p>`;
+  // Render result
+  resultEl.style.display = "block";
+  resultEl.innerHTML = `
+    <p class="big">Mix your bucket/tank to: <span style="color:var(--accent)">${round(tankPct,3)}%</span></p>
+    <p class="small">${injector.name} @ ${gpmVal} GPM</p>
+    <p class="small" style="margin-top:6px;">${DRAW_NOTE}</p>
+    <p class="small" style="margin-top:10px;">Batch Recipes (Same Setup)</p>
+  `;
 
-  tableWrap.style.display="block";
+  // Build table
+  tableWrap.style.display = "block";
   tableWrap.innerHTML = `
-    <table><thead><tr><th>Batch</th><th>Chem (gal)</th><th>Water (gal)</th></tr></thead>
-    <tbody>${BATCHES.map(b=>{
-      const m=batch(b,stockVal,tankPct);
-      return `<tr><td>${b}</td><td>${round(m.chem)}</td><td>${round(m.water)}</td></tr>`;
-    }).join("")}</tbody></table>`;
-};
+    <table>
+      <thead>
+        <tr>
+          <th>Batch</th>
+          <th>Stock Chem (gal)</th>
+          <th>Water (gal)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${BATCHES.map(b=>{
+          const m=batch(b,stockVal,tankPct);
+          return `<tr><td><strong>${b}</strong></td><td><strong>${round(m.chem)}</strong></td><td><strong>${round(m.water)}</strong></td></tr>`;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+});
 
 populate();
 </script>
