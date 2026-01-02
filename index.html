@@ -6,15 +6,19 @@
   <title>External Downstream Injector Calculator</title>
 
   <style>
-    :root { 
-      --bg:#0b0f14; 
-      --card:#121824; 
-      --text:#e7eefc; 
-      --muted:#9ab0d0; 
-      --line:#22304a; 
+    :root {
+      --bg:#0b0f14;
+      --card:#121824;
+      --text:#e7eefc;
+      --muted:#9ab0d0;
+      --line:#22304a;
+      --accent:#63b3ff;
+      --accent2:#2f5ea0;
+      --panel:#0d1420;
+      --panel2:#0a111c;
     }
 
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     body {
       margin:0;
@@ -23,90 +27,133 @@
       color:var(--text);
     }
 
-    .wrap { max-width:860px; margin:auto; padding:28px 16px; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+    h1 { margin: 0 0 8px; font-size: 22px; letter-spacing:.2px; }
+    .sub { color:var(--muted); margin:0 0 18px; }
 
-    h1 { margin-bottom:6px; font-size:22px; }
-    .sub { color:var(--muted); margin-bottom:18px; }
+    .nav { display:flex; gap:10px; margin-bottom:14px; }
+    .linkbtn{
+      text-decoration:none;
+      border:1px solid #2a3a58;
+      background:#0d1420;
+      color:var(--text);
+      padding:8px 12px;
+      border-radius:10px;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .linkbtn.active{
+      border-color:var(--accent2);
+      background: linear-gradient(180deg,#1a3c66,#12304f);
+    }
 
-    .card {
+    .card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:14px;
       padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
     }
 
-    .grid {
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-    }
+    .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+    @media (min-width:720px){ .grid{ grid-template-columns:1fr 1fr; } }
 
-    @media(min-width:720px){
-      .grid { grid-template-columns:1fr 1fr; }
-    }
-
-    label { font-size:12px; color:var(--muted); }
-    select, input {
+    label{ font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
+    select, input{
       width:100%;
-      padding:10px;
+      padding:11px 12px;
       border-radius:10px;
       border:1px solid var(--line);
-      background:#0d1420;
+      background:var(--panel);
       color:var(--text);
+      outline:none;
     }
 
-    .btn {
+    .row{ display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .btn{
+      border:1px solid #2a3a58;
+      background:linear-gradient(180deg,#1a3c66,#12304f);
+      color:var(--text);
+      padding:11px 14px;
+      border-radius:12px;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    .result{
+      margin-top:14px;
+      padding:14px;
+      border-radius:12px;
+      border:1px dashed #2a3a58;
+      background:var(--panel2);
+    }
+    .big{ font-size:18px; font-weight:800; margin:0 0 6px; }
+    .small{ font-size:13px; color:var(--muted); margin:0; }
+
+    .tableWrap{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+      background:rgba(0,0,0,.08);
+    }
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
+    th{ background:#0d1522; text-align:left; color:var(--text); }
+    tr:last-child td{ border-bottom:none; }
+
+    .bestRow td{
+      background: linear-gradient(180deg, rgba(99,179,255,.18), rgba(99,179,255,.06));
+    }
+    .pill{
+      display:inline-block;
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(99,179,255,.45);
+      color:var(--text);
+      margin-left:8px;
+      vertical-align:middle;
+    }
+
+    .notice{
       margin-top:12px;
       padding:12px;
       border-radius:12px;
       border:1px solid var(--line);
-      background:#1a3c66;
-      color:white;
-      cursor:pointer;
-      font-weight:600;
+      background:#0b1320;
     }
-
-    .result {
-      margin-top:16px;
-      padding:14px;
-      border-radius:12px;
-      border:1px dashed var(--line);
-      background:#0a111c;
-    }
-
-    table {
-      width:100%;
-      border-collapse:collapse;
-      margin-top:12px;
-    }
-
-    th, td {
-      padding:8px;
-      border-bottom:1px solid var(--line);
-      font-size:13px;
-    }
+    .notice p{ margin:0; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>External Downstream Injector Calculator</h1>
-    <p class="sub">Select injector, GPM, stock %, and desired output.</p>
+    <p class="sub">
+      Choose your external injector type + GPM, enter stock % and desired output %, then get the recommended insert.
+    </p>
+
+    <div class="nav">
+      <a class="linkbtn active" href="./index.html">External Injector Calculator</a>
+      <a class="linkbtn" href="./downstream-injector.html">Regular Downstream Injector</a>
+    </div>
 
     <div class="card">
       <div class="grid">
-
         <div>
-          <label>Injector Type</label>
-          <select id="injectorType">
-            <option value="xjet">X-Jet</option>
-            <option value="joejet">JOEJET</option>
-            <option value="fixfans">FIXFANS</option>
+          <label>External Injector Type</label>
+          <select id="brand">
+            <option value="xjet">X-Jet® style (Color Inserts)</option>
+            <option value="joejet">JOEJET™ style (Alphabet Inserts)</option>
+            <option value="fixfans">FIXFANS™ style (Alphabet Inserts)</option>
           </select>
         </div>
 
         <div>
-          <label>Machine GPM</label>
-          <select id="gpmSelect">
+          <label>Pressure Washer Flow (GPM)</label>
+          <select id="gpm">
             <option value="2">2 GPM</option>
             <option value="3">3 GPM</option>
             <option value="4" selected>4 GPM</option>
@@ -117,72 +164,155 @@
         </div>
 
         <div>
-          <label>Stock %</label>
-          <input id="stockInput" type="number" value="12.5">
+          <label>Stock Chemical Strength (%)</label>
+          <input id="stock" type="number" value="12.5" step="0.1" min="0" />
         </div>
 
         <div>
-          <label>Desired Output %</label>
-          <input id="desiredInput" type="number" value="1.5">
+          <label>Desired Output Strength (%)</label>
+          <input id="desired" type="number" value="1.5" step="0.1" min="0" />
         </div>
-
       </div>
 
-      <button class="btn" id="calculateBtn">Calculate</button>
+      <div class="row">
+        <button class="btn" id="calc" type="button">Calculate</button>
+      </div>
 
-      <div id="resultBox" class="result" style="display:none;"></div>
-      <div id="tableBox" style="display:none;"></div>
+      <div class="result" id="result" style="display:none;"></div>
+      <div class="tableWrap" id="tableWrap" style="display:none;"></div>
+
+      <div class="notice">
+        <p class="small">
+          <strong>Disclaimer:</strong> Results are estimates. Actual draw varies by hose length, injector condition,
+          nozzle choice, temperature, and chemical viscosity. Brand names are used for identification only.
+          Not affiliated with any manufacturer.
+        </p>
+      </div>
     </div>
   </div>
 <script>
-const TABLES = {
-  xjet: [
-    { label:"OPEN", ratios:{2:0.8,3:1.2,4:1.6,5:2,6:2.4,8:3} },
-    { label:"GREY", ratios:{2:1.4,3:2,4:2.5,5:3,6:4,8:4.9} },
-    { label:"BLACK", ratios:{2:3,3:4,4:5,5:6.5,6:8,8:11} },
-    { label:"BEIGE", ratios:{2:6,3:8,4:10,5:13,6:16,8:20} }
-  ],
-  joejet: [],
-  fixfans: []
-};
+  // X-Jet® color insert draw ratios (water:chem), by machine GPM.
+  // Output % at gun is estimated by: stock% / (ratio + 1)
+  const XJET_INSERTS = [
+    { label:"OPEN",  ratios:{2:0.8,3:1.2,4:1.6,5:2.0,6:2.4,8:3.0} },
+    { label:"GREY",  ratios:{2:1.4,3:2.0,4:2.5,5:3.0,6:4.0,8:4.9} },
+    { label:"BLACK", ratios:{2:3.0,3:4.0,4:5.0,5:6.5,6:8.0,8:11.0} },
+    { label:"BEIGE", ratios:{2:6.0,3:8.0,4:10.0,5:13.0,6:16.0,8:20.0} }
+  ];
 
-function outputPercent(stock, ratio) {
-  return stock / (ratio + 1);
-}
+  function outputPercent(stockPct, ratio){
+    return stockPct / (ratio + 1);
+  }
+
+  function toNum(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  function pct(n){
+    return `${n.toFixed(2)}%`;
+  }
+
+  function show(el){ el.style.display = "block"; }
+  function hide(el){ el.style.display = "none"; }
+
+  function renderXjetResults({ gpmNum, stockPct, desiredPct }) {
+    const rows = XJET_INSERTS
+      .map(ins => {
+        const ratio = ins.ratios[gpmNum];
+        const out = outputPercent(stockPct, ratio);
+        return { ...ins, out, diff: Math.abs(out - desiredPct) };
+      })
+      .sort((a,b) => a.diff - b.diff);
+
+    const best = rows[0];
+
+    const resultEl = document.getElementById("result");
+    const tableEl  = document.getElementById("tableWrap");
+
+    show(resultEl);
+    show(tableEl);
+
+    resultEl.innerHTML = `
+      <p class="big">Recommended Insert: ${best.label} <span class="pill">Best Match</span></p>
+      <p class="small">Estimated output at gun: <strong>${pct(best.out)}</strong> (target: ${pct(desiredPct)})</p>
+      <p class="small">X-Jet® style inserts @ ${gpmNum} GPM • Stock ${pct(stockPct)}</p>
+    `;
+
+    tableEl.innerHTML = `
+      <table>
+        <tr>
+          <th>Insert</th>
+          <th>Estimated Output %</th>
+        </tr>
+        ${rows.map(r => `
+          <tr class="${r.label === best.label ? "bestRow" : ""}">
+            <td>
+              ${r.label}
+              ${r.label === best.label ? `<span class="pill">Recommended</span>` : ""}
+            </td>
+            <td>${pct(r.out)}</td>
+          </tr>
+        `).join("")}
+      </table>
+    `;
+  }
 </script>
 <script>
-document.getElementById("calculateBtn").onclick = () => {
+  const calcBtn   = document.getElementById("calc");
+  const brandEl   = document.getElementById("brand");
+  const gpmEl     = document.getElementById("gpm");
+  const stockEl   = document.getElementById("stock");
+  const desiredEl = document.getElementById("desired");
 
-  const injector = document.getElementById("injectorType").value;
-  const gpm = Number(document.getElementById("gpmSelect").value);
-  const stock = Number(document.getElementById("stockInput").value);
-  const desired = Number(document.getElementById("desiredInput").value);
+  const resultEl  = document.getElementById("result");
+  const tableEl   = document.getElementById("tableWrap");
 
-  const rows = TABLES[injector]
-    .map(i => {
-      const out = outputPercent(stock, i.ratios[gpm]);
-      return { ...i, out, diff: Math.abs(out - desired) };
-    })
-    .sort((a,b) => a.diff - b.diff);
+  calcBtn.addEventListener("click", () => {
+    const brand = brandEl.value;
+    const gpmNum = toNum(gpmEl.value);
+    const stockPct = toNum(stockEl.value);
+    const desiredPct = toNum(desiredEl.value);
 
-  const best = rows[0];
+    // Clear previous
+    hide(resultEl);
+    hide(tableEl);
+    resultEl.innerHTML = "";
+    tableEl.innerHTML = "";
 
-  document.getElementById("resultBox").style.display = "block";
-  document.getElementById("tableBox").style.display = "block";
+    // Basic validation
+    if (!Number.isFinite(gpmNum) || !Number.isFinite(stockPct) || !Number.isFinite(desiredPct)) {
+      show(resultEl);
+      resultEl.innerHTML = `<p class="big">Check your inputs</p><p class="small">Please enter valid numbers for stock % and desired output %.</p>`;
+      return;
+    }
 
-  document.getElementById("resultBox").innerHTML =
-    `<strong>Recommended Insert:</strong> ${best.label}<br>
-     Output ≈ ${best.out.toFixed(2)}%`;
+    if (stockPct <= 0 || desiredPct <= 0) {
+      show(resultEl);
+      resultEl.innerHTML = `<p class="big">Check your inputs</p><p class="small">Stock % and desired output % must be greater than 0.</p>`;
+      return;
+    }
 
-  document.getElementById("tableBox").innerHTML = `
-    <table>
-      <tr><th>Insert</th><th>Output %</th></tr>
-      ${rows.map(r =>
-        `<tr><td>${r.label}</td><td>${r.out.toFixed(2)}%</td></tr>`
-      ).join("")}
-    </table>
-  `;
-};
+    if (desiredPct > stockPct) {
+      show(resultEl);
+      resultEl.innerHTML = `<p class="big">Desired output is higher than stock</p><p class="small">Desired output % cannot exceed stock %.</p>`;
+      return;
+    }
+
+    // External injector types
+    if (brand === "xjet") {
+      renderXjetResults({ gpmNum, stockPct, desiredPct });
+      return;
+    }
+
+    // JOEJET™ / FIXFANS™ tables not loaded yet (keeps page consistent and avoids broken results)
+    show(resultEl);
+    resultEl.innerHTML = `
+      <p class="big">Table coming soon</p>
+      <p class="small">JOEJET™ / FIXFANS™ insert tables aren’t loaded yet on this page.</p>
+      <p class="small">Switch to <strong>X-Jet®</strong> to see full color insert outputs and the recommended match.</p>
+    `;
+  });
 </script>
 
 </body>
