@@ -12,10 +12,9 @@
       --text:#e7eefc; 
       --muted:#9ab0d0; 
       --line:#22304a; 
-      --accent:#63b3ff; 
     }
 
-    *, *::before, *::after { box-sizing: border-box; }
+    * { box-sizing: border-box; }
 
     body {
       margin:0;
@@ -24,110 +23,90 @@
       color:var(--text);
     }
 
-    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+    .wrap { max-width:860px; margin:auto; padding:28px 16px; }
 
-    h1 { margin: 0 0 8px; font-size: 22px; }
-    .sub { color:var(--muted); margin:0 0 18px; }
-
-    .nav { display:flex; gap:10px; margin-bottom:14px; }
-    .linkbtn {
-      text-decoration:none;
-      border:1px solid #2a3a58;
-      background:#0d1420;
-      color:var(--text);
-      padding:8px 12px;
-      border-radius:10px;
-      font-size:13px;
-    }
-    .linkbtn.active {
-      border-color:#2f5ea0;
-      background: linear-gradient(180deg,#1a3c66,#12304f);
-    }
+    h1 { margin-bottom:6px; font-size:22px; }
+    .sub { color:var(--muted); margin-bottom:18px; }
 
     .card {
       background:var(--card);
       border:1px solid var(--line);
       border-radius:14px;
       padding:16px;
-      box-shadow:0 12px 40px rgba(0,0,0,.35);
     }
 
-    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
-    @media (min-width:720px){ .grid{ grid-template-columns:1fr 1fr; } }
+    .grid {
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+
+    @media(min-width:720px){
+      .grid { grid-template-columns:1fr 1fr; }
+    }
 
     label { font-size:12px; color:var(--muted); }
     select, input {
       width:100%;
-      padding:11px 12px;
+      padding:10px;
       border-radius:10px;
       border:1px solid var(--line);
       background:#0d1420;
       color:var(--text);
     }
 
-    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
     .btn {
-      border:1px solid #2a3a58;
-      background:linear-gradient(180deg,#1a3c66,#12304f);
-      color:var(--text);
-      padding:11px 14px;
-      border-radius:12px;
-      font-weight:600;
-      cursor:pointer;
-    }
-
-    .result {
-      margin-top:14px;
-      padding:14px;
-      border-radius:12px;
-      border:1px dashed #2a3a58;
-      background:#0a111c;
-    }
-
-    .big { font-size:18px; font-weight:800; }
-    .small { font-size:13px; color:var(--muted); }
-
-    .table { margin-top:12px; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
-    th { background:#0d1522; }
-
-    .notice {
       margin-top:12px;
       padding:12px;
       border-radius:12px;
       border:1px solid var(--line);
-      background:#0b1320;
+      background:#1a3c66;
+      color:white;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .result {
+      margin-top:16px;
+      padding:14px;
+      border-radius:12px;
+      border:1px dashed var(--line);
+      background:#0a111c;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+    }
+
+    th, td {
+      padding:8px;
+      border-bottom:1px solid var(--line);
+      font-size:13px;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>External Downstream Injector Calculator</h1>
-    <p class="sub">
-      Choose your external injector type, enter stock % + machine GPM + desired output %, then get the recommended insert.
-    </p>
-
-    <!-- TOP NAV (THIS IS THE ONLY SWITCH NOW) -->
-    <div class="nav">
-      <a class="linkbtn active" href="./index.html">External Injector Calculator</a>
-      <a class="linkbtn" href="./downstream-injector.html">Regular Downstream Injector</a>
-    </div>
+    <p class="sub">Select injector, GPM, stock %, and desired output.</p>
 
     <div class="card">
       <div class="grid">
+
         <div>
-          <label>External Injector Type</label>
-          <select id="brand">
-            <option value="xjet">X-Jet-style (Color Inserts)</option>
-            <option value="joejet">JOEJET-style (Alphabet Inserts)</option>
-            <option value="fixfans">FIXFANS-style (Alphabet Inserts)</option>
+          <label>Injector Type</label>
+          <select id="injectorType">
+            <option value="xjet">X-Jet</option>
+            <option value="joejet">JOEJET</option>
+            <option value="fixfans">FIXFANS</option>
           </select>
         </div>
 
         <div>
-          <label>Pressure Washer Flow (GPM)</label>
-          <select id="gpm">
+          <label>Machine GPM</label>
+          <select id="gpmSelect">
             <option value="2">2 GPM</option>
             <option value="3">3 GPM</option>
             <option value="4" selected>4 GPM</option>
@@ -138,68 +117,73 @@
         </div>
 
         <div>
-          <label>Stock Chemical Strength (%)</label>
-          <input id="stock" type="number" value="12.5">
+          <label>Stock %</label>
+          <input id="stockInput" type="number" value="12.5">
         </div>
 
         <div>
-          <label>Desired Output Strength (%)</label>
-          <input id="desired" type="number" value="1.5">
+          <label>Desired Output %</label>
+          <input id="desiredInput" type="number" value="1.5">
         </div>
+
       </div>
 
-      <div class="row">
-        <button class="btn" id="calc">Calculate</button>
-      </div>
+      <button class="btn" id="calculateBtn">Calculate</button>
 
-      <div class="result" id="result" style="display:none;"></div>
-      <div class="table" id="tableWrap" style="display:none;"></div>
-
-      <div class="notice">
-        <p class="small">
-          <strong>Disclaimer:</strong> Not affiliated with any manufacturer.  
-          Results are estimates and vary by setup.
-        </p>
-      </div>
+      <div id="resultBox" class="result" style="display:none;"></div>
+      <div id="tableBox" style="display:none;"></div>
     </div>
   </div>
 <script>
-const XJET = [
-  { label:"OPEN", ratios:{2:0.8,3:1.2,4:1.6,5:2,6:2.4,8:3} },
-  { label:"GREY", ratios:{2:1.4,3:2,4:2.5,5:3,6:4,8:4.9} },
-  { label:"BLACK", ratios:{2:3,3:4,4:5,5:6.5,6:8,8:11} },
-  { label:"BEIGE", ratios:{2:6,3:8,4:10,5:13,6:16,8:20} }
-];
+const TABLES = {
+  xjet: [
+    { label:"OPEN", ratios:{2:0.8,3:1.2,4:1.6,5:2,6:2.4,8:3} },
+    { label:"GREY", ratios:{2:1.4,3:2,4:2.5,5:3,6:4,8:4.9} },
+    { label:"BLACK", ratios:{2:3,3:4,4:5,5:6.5,6:8,8:11} },
+    { label:"BEIGE", ratios:{2:6,3:8,4:10,5:13,6:16,8:20} }
+  ],
+  joejet: [],
+  fixfans: []
+};
 
-function output(stock, r){ return stock/(r+1); }
+function outputPercent(stock, ratio) {
+  return stock / (ratio + 1);
+}
+</script>
+<script>
+document.getElementById("calculateBtn").onclick = () => {
 
-calc.onclick = () => {
-  const gpm = gpm.value;
-  const stockVal = +stock.value;
-  const desiredVal = +desired.value;
+  const injector = document.getElementById("injectorType").value;
+  const gpm = Number(document.getElementById("gpmSelect").value);
+  const stock = Number(document.getElementById("stockInput").value);
+  const desired = Number(document.getElementById("desiredInput").value);
 
-  const rows = XJET.map(i=>{
-    const o = output(stockVal, i.ratios[gpm]);
-    return {...i, out:o, diff:Math.abs(o-desiredVal)};
-  }).sort((a,b)=>a.diff-b.diff);
+  const rows = TABLES[injector]
+    .map(i => {
+      const out = outputPercent(stock, i.ratios[gpm]);
+      return { ...i, out, diff: Math.abs(out - desired) };
+    })
+    .sort((a,b) => a.diff - b.diff);
 
   const best = rows[0];
 
-  result.style.display="block";
-  tableWrap.style.display="block";
+  document.getElementById("resultBox").style.display = "block";
+  document.getElementById("tableBox").style.display = "block";
 
-  result.innerHTML = `
-    <p class="big">Recommended Insert: ${best.label}</p>
-    <p class="small">Outputs ~${best.out.toFixed(2)}%</p>
-  `;
+  document.getElementById("resultBox").innerHTML =
+    `<strong>Recommended Insert:</strong> ${best.label}<br>
+     Output ≈ ${best.out.toFixed(2)}%`;
 
-  tableWrap.innerHTML = `
+  document.getElementById("tableBox").innerHTML = `
     <table>
       <tr><th>Insert</th><th>Output %</th></tr>
-      ${rows.map(r=>`<tr><td>${r.label}</td><td>${r.out.toFixed(2)}%</td></tr>`).join("")}
+      ${rows.map(r =>
+        `<tr><td>${r.label}</td><td>${r.out.toFixed(2)}%</td></tr>`
+      ).join("")}
     </table>
   `;
 };
 </script>
+
 </body>
 </html>
