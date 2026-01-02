@@ -6,12 +6,12 @@
   <title>External Downstream Injector Calculator</title>
 
   <style>
-    :root {
-      --bg:#0b0f14;
-      --card:#121824;
-      --text:#e7eefc;
-      --muted:#9ab0d0;
-      --line:#22304a;
+    :root { 
+      --bg:#0b0f14; 
+      --card:#121824; 
+      --text:#e7eefc; 
+      --muted:#9ab0d0; 
+      --line:#22304a; 
       --accent:#63b3ff;
       --accent2:#2f5ea0;
       --panel:#0d1420;
@@ -28,11 +28,12 @@
     }
 
     .wrap { max-width: 860px; margin: 0 auto; padding: 28px 16px 60px; }
+
     h1 { margin: 0 0 8px; font-size: 22px; letter-spacing:.2px; }
     .sub { color:var(--muted); margin:0 0 18px; }
 
     .nav { display:flex; gap:10px; margin-bottom:14px; }
-    .linkbtn{
+    .linkbtn {
       text-decoration:none;
       border:1px solid #2a3a58;
       background:#0d1420;
@@ -44,12 +45,12 @@
       align-items:center;
       gap:8px;
     }
-    .linkbtn.active{
+    .linkbtn.active {
       border-color:var(--accent2);
       background: linear-gradient(180deg,#1a3c66,#12304f);
     }
 
-    .card{
+    .card {
       background:var(--card);
       border:1px solid var(--line);
       border-radius:14px;
@@ -57,11 +58,11 @@
       box-shadow:0 12px 40px rgba(0,0,0,.35);
     }
 
-    .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+    .grid { display:grid; grid-template-columns:1fr; gap:12px; }
     @media (min-width:720px){ .grid{ grid-template-columns:1fr 1fr; } }
 
-    label{ font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
-    select, input{
+    label { font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
+    select, input {
       width:100%;
       padding:11px 12px;
       border-radius:10px;
@@ -71,8 +72,8 @@
       outline:none;
     }
 
-    .row{ display:flex; gap:10px; align-items:center; margin-top:10px; }
-    .btn{
+    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .btn {
       border:1px solid #2a3a58;
       background:linear-gradient(180deg,#1a3c66,#12304f);
       color:var(--text);
@@ -82,32 +83,33 @@
       cursor:pointer;
     }
 
-    .result{
+    .result {
       margin-top:14px;
       padding:14px;
       border-radius:12px;
       border:1px dashed #2a3a58;
       background:var(--panel2);
     }
-    .big{ font-size:18px; font-weight:800; margin:0 0 6px; }
-    .small{ font-size:13px; color:var(--muted); margin:0; }
 
-    .tableWrap{
+    .big { font-size:18px; font-weight:800; margin:0 0 6px; }
+    .small { font-size:13px; color:var(--muted); margin:0; }
+
+    .tableWrap {
       margin-top:12px;
       border:1px solid var(--line);
       border-radius:12px;
       overflow:hidden;
       background:rgba(0,0,0,.08);
     }
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
-    th{ background:#0d1522; text-align:left; color:var(--text); }
-    tr:last-child td{ border-bottom:none; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid var(--line); font-size:13px; }
+    th { background:#0d1522; text-align:left; }
+    tr:last-child td { border-bottom:none; }
 
-    .bestRow td{
+    .bestRow td {
       background: linear-gradient(180deg, rgba(99,179,255,.18), rgba(99,179,255,.06));
     }
-    .pill{
+    .pill {
       display:inline-block;
       font-size:11px;
       padding:3px 8px;
@@ -118,14 +120,14 @@
       vertical-align:middle;
     }
 
-    .notice{
+    .notice {
       margin-top:12px;
       padding:12px;
       border-radius:12px;
       border:1px solid var(--line);
       background:#0b1320;
     }
-    .notice p{ margin:0; }
+    .notice p { margin:0; }
   </style>
 </head>
 <body>
@@ -190,130 +192,150 @@
       </div>
     </div>
   </div>
-<script>
-  // X-Jet® color insert draw ratios (water:chem), by machine GPM.
-  // Output % at gun is estimated by: stock% / (ratio + 1)
-  const XJET_INSERTS = [
-    { label:"OPEN",  ratios:{2:0.8,3:1.2,4:1.6,5:2.0,6:2.4,8:3.0} },
-    { label:"GREY",  ratios:{2:1.4,3:2.0,4:2.5,5:3.0,6:4.0,8:4.9} },
-    { label:"BLACK", ratios:{2:3.0,3:4.0,4:5.0,5:6.5,6:8.0,8:11.0} },
-    { label:"BEIGE", ratios:{2:6.0,3:8.0,4:10.0,5:13.0,6:16.0,8:20.0} }
-  ];
 
-  function outputPercent(stockPct, ratio){
-    return stockPct / (ratio + 1);
-  }
+  <script>
+    // Ratios are "Water : 1 part Chem" (e.g., 10 means 10:1)
+    // Output % at gun estimated by: stock% / (ratio + 1)
 
-  function toNum(v){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : NaN;
-  }
+    const XJET_COLOR_INSERTS = [
+      { label:"OPEN",      ratios:{2:0.8, 3:1.2, 4:1.6, 5:2,   6:2.4, 8:3} },
+      { label:"GREY",      ratios:{2:1.4, 3:2,   4:2.5, 5:3,   6:4,   8:4.9} },
+      { label:"BLACK",     ratios:{2:3,   3:4,   4:5,   5:6.5, 6:8,   8:11} },
+      { label:"BEIGE",     ratios:{2:6,   3:8,   4:10,  5:13,  6:16,  8:20} },
+      { label:"RED",       ratios:{2:9,   3:12,  4:16,  5:20,  6:24,  8:28} },
+      { label:"WHITE",     ratios:{2:16,  3:22,  4:30,  5:38,  6:45,  8:51} },
+      { label:"BLUE",      ratios:{2:20,  3:27,  4:37,  5:46,  6:55,  8:61} },
+      { label:"TAN (MED)", ratios:{2:28,  3:38,  4:50,  5:64,  6:77,  8:85} },
+      { label:"GREEN",     ratios:{2:31,  3:42,  4:57,  5:70,  6:85,  8:90} },
+      { label:"ORANGE",    ratios:{2:35,  3:48,  4:64,  5:80,  6:96,  8:102} },
+      { label:"BROWN",     ratios:{2:48,  3:66,  4:88,  5:110, 6:133, 8:145} },
+      { label:"YELLOW",    ratios:{2:70,  3:96,  4:128, 5:158, 6:191, 8:215} },
+      { label:"AQUA",      ratios:{2:94,  3:128, 4:170, 5:215, 6:257, 8:284} },
+      { label:"PURPLE",    ratios:{2:146, 3:200, 4:240, 5:300, 6:400, 8:501} },
+      { label:"PINK",      ratios:{2:280, 3:353, 4:500, 5:480, 6:766, 8:906} }
+    ];
 
-  function pct(n){
-    return `${n.toFixed(2)}%`;
-  }
+    const ALPHABET_INSERTS = [
+      { label:"A", ratios:{2:1.4, 3:2,   4:2.5, 5:3,   6:4,   8:4.9} },
+      { label:"B", ratios:{2:3,   3:4,   4:5,   5:6.5, 6:8,   8:11} },
+      { label:"C", ratios:{2:6,   3:8,   4:10,  5:13,  6:16,  8:20} },
+      { label:"E", ratios:{2:9,   3:12,  4:16,  5:20,  6:24,  8:28} },
+      { label:"F", ratios:{2:16,  3:22,  4:30,  5:38,  6:45,  8:51} },
+      { label:"G", ratios:{2:20,  3:27,  4:37,  5:46,  6:55,  8:61} },
+      { label:"H", ratios:{2:28,  3:38,  4:50,  5:64,  6:77,  8:85} },
+      { label:"J", ratios:{2:31,  3:42,  4:57,  5:70,  6:85,  8:90} },
+      { label:"K", ratios:{2:35,  3:48,  4:64,  5:80,  6:96,  8:102} },
+      { label:"L", ratios:{2:48,  3:66,  4:88,  5:110, 6:133, 8:145} },
+      { label:"M", ratios:{2:70,  3:96,  4:128, 5:158, 6:191, 8:215} },
+      { label:"N", ratios:{2:94,  3:128, 4:170, 5:215, 6:257, 8:284} },
+      { label:"P", ratios:{2:146, 3:200, 4:240, 5:300, 6:400, 8:501} },
+      { label:"Q", ratios:{2:280, 3:383, 4:500, 5:480, 6:766, 8:906} }
+    ];
 
-  function show(el){ el.style.display = "block"; }
-  function hide(el){ el.style.display = "none"; }
+    function outputPercent(stockPct, ratio) {
+      return stockPct / (ratio + 1);
+    }
+    function toNum(v){
+      const n = Number(v);
+      return Number.isFinite(n) ? n : NaN;
+    }
+    function pct(n){ return `${n.toFixed(2)}%`; }
+    function show(el){ el.style.display = "block"; }
+    function hide(el){ el.style.display = "none"; }
 
-  function renderXjetResults({ gpmNum, stockPct, desiredPct }) {
-    const rows = XJET_INSERTS
-      .map(ins => {
-        const ratio = ins.ratios[gpmNum];
-        const out = outputPercent(stockPct, ratio);
-        return { ...ins, out, diff: Math.abs(out - desiredPct) };
-      })
-      .sort((a,b) => a.diff - b.diff);
+    function renderResults({ title, subtitle, gpmNum, stockPct, desiredPct, inserts }) {
+      const rows = inserts
+        .map(ins => {
+          const ratio = ins.ratios[gpmNum];
+          const out = outputPercent(stockPct, ratio);
+          return { ...ins, out, diff: Math.abs(out - desiredPct) };
+        })
+        .sort((a,b)=>a.diff-b.diff);
 
-    const best = rows[0];
+      const best = rows[0];
+
+      const resultEl = document.getElementById("result");
+      const tableEl = document.getElementById("tableWrap");
+
+      show(resultEl);
+      show(tableEl);
+
+      resultEl.innerHTML = `
+        <p class="big">${title}: ${best.label} <span class="pill">Recommended</span></p>
+        <p class="small">${subtitle}</p>
+        <p class="small">Estimated output at gun: <strong>${pct(best.out)}</strong> (target: ${pct(desiredPct)}) • Stock ${pct(stockPct)} • ${gpmNum} GPM</p>
+      `;
+
+      tableEl.innerHTML = `
+        <table>
+          <tr>
+            <th>Insert</th>
+            <th>Estimated Output %</th>
+          </tr>
+          ${rows.map(r => `
+            <tr class="${r.label === best.label ? "bestRow" : ""}">
+              <td>${r.label}${r.label === best.label ? `<span class="pill">Best Match</span>` : ""}</td>
+              <td>${pct(r.out)}</td>
+            </tr>
+          `).join("")}
+        </table>
+      `;
+    }
+
+    const calcBtn = document.getElementById("calc");
+    const brandEl = document.getElementById("brand");
+    const gpmEl = document.getElementById("gpm");
+    const stockEl = document.getElementById("stock");
+    const desiredEl = document.getElementById("desired");
 
     const resultEl = document.getElementById("result");
-    const tableEl  = document.getElementById("tableWrap");
+    const tableEl = document.getElementById("tableWrap");
 
-    show(resultEl);
-    show(tableEl);
+    calcBtn.addEventListener("click", () => {
+      const brand = brandEl.value;
+      const gpmNum = toNum(gpmEl.value);
+      const stockPct = toNum(stockEl.value);
+      const desiredPct = toNum(desiredEl.value);
 
-    resultEl.innerHTML = `
-      <p class="big">Recommended Insert: ${best.label} <span class="pill">Best Match</span></p>
-      <p class="small">Estimated output at gun: <strong>${pct(best.out)}</strong> (target: ${pct(desiredPct)})</p>
-      <p class="small">X-Jet® style inserts @ ${gpmNum} GPM • Stock ${pct(stockPct)}</p>
-    `;
+      hide(resultEl);
+      hide(tableEl);
+      resultEl.innerHTML = "";
+      tableEl.innerHTML = "";
 
-    tableEl.innerHTML = `
-      <table>
-        <tr>
-          <th>Insert</th>
-          <th>Estimated Output %</th>
-        </tr>
-        ${rows.map(r => `
-          <tr class="${r.label === best.label ? "bestRow" : ""}">
-            <td>
-              ${r.label}
-              ${r.label === best.label ? `<span class="pill">Recommended</span>` : ""}
-            </td>
-            <td>${pct(r.out)}</td>
-          </tr>
-        `).join("")}
-      </table>
-    `;
-  }
-</script>
-<script>
-  const calcBtn   = document.getElementById("calc");
-  const brandEl   = document.getElementById("brand");
-  const gpmEl     = document.getElementById("gpm");
-  const stockEl   = document.getElementById("stock");
-  const desiredEl = document.getElementById("desired");
+      if (!Number.isFinite(gpmNum) || !Number.isFinite(stockPct) || !Number.isFinite(desiredPct)) {
+        show(resultEl);
+        resultEl.innerHTML = `<p class="big">Check your inputs</p><p class="small">Please enter valid numbers for stock % and desired output %.</p>`;
+        return;
+      }
+      if (stockPct <= 0 || desiredPct <= 0) {
+        show(resultEl);
+        resultEl.innerHTML = `<p class="big">Check your inputs</p><p class="small">Stock % and desired output % must be greater than 0.</p>`;
+        return;
+      }
+      if (desiredPct > stockPct) {
+        show(resultEl);
+        resultEl.innerHTML = `<p class="big">Desired output is higher than stock</p><p class="small">Desired output % cannot exceed stock %.</p>`;
+        return;
+      }
 
-  const resultEl  = document.getElementById("result");
-  const tableEl   = document.getElementById("tableWrap");
+      if (brand === "xjet") {
+        renderResults({
+          title: "Recommended Color Insert",
+          subtitle: "X-Jet® style (Color Inserts)",
+          gpmNum, stockPct, desiredPct,
+          inserts: XJET_COLOR_INSERTS
+        });
+        return;
+      }
 
-  calcBtn.addEventListener("click", () => {
-    const brand = brandEl.value;
-    const gpmNum = toNum(gpmEl.value);
-    const stockPct = toNum(stockEl.value);
-    const desiredPct = toNum(desiredEl.value);
-
-    // Clear previous
-    hide(resultEl);
-    hide(tableEl);
-    resultEl.innerHTML = "";
-    tableEl.innerHTML = "";
-
-    // Basic validation
-    if (!Number.isFinite(gpmNum) || !Number.isFinite(stockPct) || !Number.isFinite(desiredPct)) {
-      show(resultEl);
-      resultEl.innerHTML = `<p class="big">Check your inputs</p><p class="small">Please enter valid numbers for stock % and desired output %.</p>`;
-      return;
-    }
-
-    if (stockPct <= 0 || desiredPct <= 0) {
-      show(resultEl);
-      resultEl.innerHTML = `<p class="big">Check your inputs</p><p class="small">Stock % and desired output % must be greater than 0.</p>`;
-      return;
-    }
-
-    if (desiredPct > stockPct) {
-      show(resultEl);
-      resultEl.innerHTML = `<p class="big">Desired output is higher than stock</p><p class="small">Desired output % cannot exceed stock %.</p>`;
-      return;
-    }
-
-    // External injector types
-    if (brand === "xjet") {
-      renderXjetResults({ gpmNum, stockPct, desiredPct });
-      return;
-    }
-
-    // JOEJET™ / FIXFANS™ tables not loaded yet (keeps page consistent and avoids broken results)
-    show(resultEl);
-    resultEl.innerHTML = `
-      <p class="big">Table coming soon</p>
-      <p class="small">JOEJET™ / FIXFANS™ insert tables aren’t loaded yet on this page.</p>
-      <p class="small">Switch to <strong>X-Jet®</strong> to see full color insert outputs and the recommended match.</p>
-    `;
-  });
-</script>
-
+      // JOEJET™ and FIXFANS™ share the alphabet insert chart
+      renderResults({
+        title: "Recommended Alphabet Insert",
+        subtitle: brand === "joejet" ? "JOEJET™ style (Alphabet Inserts)" : "FIXFANS™ style (Alphabet Inserts)",
+        gpmNum, stockPct, desiredPct,
+        inserts: ALPHABET_INSERTS
+      });
+    });
+  </script>
 </body>
 </html>
