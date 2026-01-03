@@ -139,6 +139,7 @@
       </p>
     </div>
   </div>
+
 <script>
 const DRAW_NOTE =
   "Actual draw varies by hose length, injector condition, nozzle choice, temperature, and chemical viscosity.";
@@ -173,6 +174,20 @@ function requiredTank(desired, ratio){ return desired*(ratio+1); }
 function batch(volume, stock, tank){
   const chem = volume*(tank/stock);
   return { volume, chem, water: volume-chem };
+}
+
+// NEW: ratio display helper (Water : Chem) -> "2.7-1 (3-1)"
+function ratioDisplay(waterGallons, chemGallons){
+  // Safety: avoid divide-by-zero or weird negatives due to rounding
+  if (!isFinite(waterGallons) || !isFinite(chemGallons) || chemGallons <= 0) return "—";
+
+  const exact = waterGallons / chemGallons;
+
+  // If exact is extremely large (tiny chem), still show something sane
+  if (!isFinite(exact) || exact <= 0) return "—";
+
+  const roundedInt = Math.max(1, Math.round(exact));
+  return `${exact.toFixed(1)}-1 (${roundedInt}-1)`;
 }
 
 document.getElementById("calc").addEventListener("click", () => {
@@ -233,7 +248,7 @@ document.getElementById("calc").addEventListener("click", () => {
     <p class="small" style="margin-top:10px;">Batch Recipes (Same Setup)</p>
   `;
 
-  // Build table
+  // Build table (UPDATED: includes Ratio column)
   tableWrap.style.display = "block";
   tableWrap.innerHTML = `
     <table>
@@ -242,12 +257,22 @@ document.getElementById("calc").addEventListener("click", () => {
           <th>Batch</th>
           <th>Stock Chem (gal)</th>
           <th>Water (gal)</th>
+          <th>Ratio</th>
         </tr>
       </thead>
       <tbody>
         ${BATCHES.map(b=>{
-          const m=batch(b,stockVal,tankPct);
-          return `<tr><td><strong>${b}</strong></td><td><strong>${round(m.chem)}</strong></td><td><strong>${round(m.water)}</strong></td></tr>`;
+          const m = batch(b, stockVal, tankPct);
+          const ratioText = ratioDisplay(m.water, m.chem);
+
+          return `
+            <tr>
+              <td><strong>${b}</strong></td>
+              <td><strong>${round(m.chem)}</strong></td>
+              <td><strong>${round(m.water)}</strong></td>
+              <td><strong>${ratioText}</strong></td>
+            </tr>
+          `;
         }).join("")}
       </tbody>
     </table>
