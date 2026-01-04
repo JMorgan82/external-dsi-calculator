@@ -3,451 +3,328 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="A third-party calculator that helps pressure washers dial in chemical strength with external downstream injectors." />
-  <title>External Downstream Injector Calculator — Instant Access</title>
+  <title>Downstream Injector Calculator Bundle</title>
+  <meta name="description" content="External injector insert picker + regular downstream batch-mix calculator. $5/year." />
 
   <style>
     :root{
       --bg:#0b0f14;
       --card:#121824;
+      --card2:#0f1623;
       --text:#e7eefc;
       --muted:#9ab0d0;
       --line:#22304a;
       --accent:#63b3ff;
-      --accent2:#8affc1;
+      --accent2:#4aa3ff;
       --warn:#ffd18a;
-      --danger:#ff7a7a;
-      --shadow: 0 18px 50px rgba(0,0,0,.35);
-      --radius: 18px;
+
+      --r:18px;
+      --shadow: 0 12px 40px rgba(0,0,0,.45);
     }
-    *{box-sizing:border-box}
+
+    *{ box-sizing:border-box; }
     body{
       margin:0;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background: radial-gradient(1200px 700px at 15% 10%, #0e1726 0%, var(--bg) 55%),
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(99,179,255,.22), transparent 55%),
                   linear-gradient(180deg,#070b10,#0b0f14);
       color:var(--text);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
-    a{color:inherit}
-    .wrap{max-width:980px;margin:0 auto;padding:28px 16px 70px}
-    .nav{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:10px 0 18px;
+
+    a{ color:inherit; text-decoration:none; }
+    .wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 16px 70px;
     }
-    .brand{
-      display:flex;align-items:center;gap:10px;
-      text-decoration:none;
+
+    /* Top */
+    .top{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      padding: 18px 18px 0;
     }
-    .logo{
-      width:38px;height:38px;border-radius:12px;
-      background: linear-gradient(145deg, rgba(99,179,255,.35), rgba(138,255,193,.18));
-      border:1px solid rgba(99,179,255,.35);
-      box-shadow: var(--shadow);
+    .badge-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-    .brand b{display:block;letter-spacing:.2px}
-    .brand small{display:block;color:var(--muted);margin-top:2px}
-    .nav .links{display:flex;gap:14px;flex-wrap:wrap}
-    .nav .links a{
-      color:var(--muted);text-decoration:none;font-size:14px;
-      padding:8px 10px;border-radius:12px;border:1px solid transparent;
+    .pill{
+      font-size:12px;
+      padding:7px 10px;
+      border:1px solid rgba(154,176,208,.25);
+      border-radius:999px;
+      color:var(--muted);
+      background: rgba(18,24,36,.55);
+      backdrop-filter: blur(6px);
     }
-    .nav .links a:hover{border-color:rgba(154,176,208,.25);color:var(--text)}
-    .hero{
-      display:grid;
-      grid-template-columns: 1.3fr .9fr;
-      gap:18px;
-      align-items:stretch;
-      margin-top:10px;
-    }
-    @media (max-width: 860px){
-      .hero{grid-template-columns:1fr}
-    }
-    .card{
-      background: rgba(18,24,36,.88);
-      border:1px solid rgba(34,48,74,.9);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .pad{padding:18px}
-    .kicker{
-      display:inline-flex;gap:10px;align-items:center;
-      padding:8px 12px;border-radius:999px;
-      background: rgba(99,179,255,.10);
-      border:1px solid rgba(99,179,255,.25);
-      color: var(--text);
-      font-size:13px;
-    }
-    .dot{width:9px;height:9px;border-radius:99px;background:var(--accent)}
+    .pill strong{ color:var(--text); font-weight:700; }
     h1{
-      margin:14px 0 10px;
-      font-size: 38px;
-      line-height: 1.05;
-      letter-spacing:-.6px;
-    }
-    @media (max-width: 520px){
-      h1{font-size: 32px;}
+      margin: 0;
+      font-size: clamp(26px, 3.2vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -.02em;
     }
     .sub{
+      margin: 0;
       color: var(--muted);
-      font-size: 16px;
+      font-size: 15px;
       line-height: 1.55;
-      margin: 0 0 16px;
+      max-width: 66ch;
     }
-    .bullets{
-      display:grid;gap:10px;margin:18px 0 0;padding:0;list-style:none;
+
+    .cta-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      padding-top: 6px;
     }
-    .bullets li{
-      display:flex;gap:10px;align-items:flex-start;
-      color: var(--text);
-    }
-    .check{
-      width:22px;height:22px;border-radius:8px;
-      display:grid;place-items:center;
-      background: rgba(138,255,193,.14);
-      border:1px solid rgba(138,255,193,.22);
-      flex: 0 0 auto;
-      margin-top:2px;
-    }
-    .check svg{width:14px;height:14px}
-    .ctaRow{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
     .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:10px;
-      padding:12px 14px;border-radius:14px;
-      border:1px solid rgba(99,179,255,.35);
-      background: linear-gradient(180deg, rgba(99,179,255,.25), rgba(99,179,255,.10));
-      color: var(--text);
-      text-decoration:none;
-      font-weight: 650;
-      box-shadow: 0 10px 30px rgba(99,179,255,.12);
-      min-width: 210px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(99,179,255,.25);
+      background: linear-gradient(180deg, rgba(99,179,255,.18), rgba(99,179,255,.10));
+      box-shadow: 0 10px 24px rgba(0,0,0,.35);
+      font-weight: 700;
+      letter-spacing: .01em;
+      transition: transform .08s ease, border-color .2s ease, background .2s ease;
+      user-select:none;
     }
-    .btn:hover{filter:brightness(1.06)}
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(99,179,255,.45); }
+    .btn:active{ transform: translateY(0px); }
     .btn.secondary{
-      border-color: rgba(154,176,208,.28);
-      background: rgba(154,176,208,.06);
-      color: var(--muted);
-      box-shadow:none;
-      min-width:auto;
+      border-color: rgba(154,176,208,.22);
+      background: rgba(18,24,36,.45);
+      color: var(--text);
+      font-weight: 650;
     }
-    .priceBox{
-      border-top: 1px solid rgba(34,48,74,.9);
-      display:grid;gap:12px;
-      padding: 16px 18px;
-      background: rgba(10,14,20,.25);
-    }
-    .priceLine{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+
     .price{
-      font-size: 30px;
-      font-weight: 800;
-      letter-spacing:-.4px;
-    }
-    .fine{
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.45;
     }
-    .badge{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:6px 10px;border-radius:999px;
-      background: rgba(255,209,138,.12);
-      border:1px solid rgba(255,209,138,.25);
-      color: var(--warn);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
+    .price strong{ color: var(--warn); }
+
+    /* Sections */
+    .stack{
+      display:flex;
+      flex-direction:column;
       gap: 14px;
       margin-top: 18px;
+      padding: 0 18px;
     }
-    @media (max-width: 860px){
-      .grid{grid-template-columns:1fr}
+
+    .card{
+      border: 1px solid rgba(154,176,208,.16);
+      background: linear-gradient(180deg, rgba(18,24,36,.88), rgba(15,22,35,.78));
+      border-radius: var(--r);
+      overflow:hidden;
+      box-shadow: var(--shadow);
     }
-    .mini h3{margin:0 0 8px;font-size:16px}
-    .mini p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
-    .section{margin-top:18px}
-    .section h2{margin:0 0 10px;font-size:22px;letter-spacing:-.2px}
-    .section p{margin:0;color:var(--muted);line-height:1.6}
-    .faq{display:grid;gap:10px;margin-top:12px}
-    details{
-      border:1px solid rgba(34,48,74,.9);
+    .card .inner{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    .kicker{
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .title{
+      margin:0;
+      font-size: 18px;
+      letter-spacing: -.01em;
+    }
+    .copy{
+      margin:0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 80ch;
+    }
+
+    .img-wrap{
+      border-top: 1px solid rgba(154,176,208,.14);
+      background: rgba(0,0,0,.14);
+      padding: 12px;
+    }
+    .img{
+      width:100%;
+      height:auto;
+      display:block;
       border-radius: 14px;
-      background: rgba(18,24,36,.68);
-      padding: 12px 12px;
+      border: 1px solid rgba(154,176,208,.12);
+      background: rgba(0,0,0,.18);
     }
-    summary{
-      cursor:pointer;
-      color: var(--text);
-      font-weight: 650;
-      list-style:none;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
+
+    /* Problem chart (blurred) */
+    .blur-wrap{
+      position:relative;
+      border-top: 1px solid rgba(154,176,208,.14);
+      background: rgba(0,0,0,.14);
+      padding: 12px;
     }
-    summary::-webkit-details-marker{display:none}
-    details p{margin:10px 0 0;color:var(--muted);font-size:14px}
-    .footer{
-      margin-top: 24px;
-      padding-top: 18px;
-      border-top: 1px solid rgba(34,48,74,.9);
+    .blur-img{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius: 14px;
+      border: 1px solid rgba(154,176,208,.12);
+      filter: blur(10px) saturate(0.9) contrast(1.05);
+      transform: scale(1.03);
+      opacity: .95;
+    }
+    .overlay{
+      position:absolute;
+      inset: 12px;
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(11,15,20,.10), rgba(11,15,20,.65));
+      border: 1px solid rgba(154,176,208,.14);
+    }
+    .overlay b{
+      display:block;
+      font-size: 16px;
+      margin-bottom: 6px;
+      letter-spacing: -.01em;
+    }
+    .overlay span{
       color: var(--muted);
       font-size: 13px;
-      line-height: 1.55;
+      line-height: 1.5;
     }
-    .disclaimer{
-      border: 1px dashed rgba(154,176,208,.35);
-      border-radius: 14px;
-      padding: 12px 12px;
-      background: rgba(154,176,208,.05);
-      margin-top: 14px;
+
+    /* Footer */
+    footer{
+      padding: 22px 18px 0;
+      color: rgba(154,176,208,.75);
+      font-size: 12px;
+      line-height: 1.6;
     }
-    .tiny{font-size:12px;color:var(--muted)}
-    .hr{height:1px;background:rgba(34,48,74,.9);margin:14px 0}
-    .callout{
-      border:1px solid rgba(99,179,255,.25);
-      background: rgba(99,179,255,.08);
-      border-radius: 14px;
-      padding: 12px 12px;
-      color: var(--text);
+    footer .line{
+      margin-top: 18px;
+      height:1px;
+      background: rgba(154,176,208,.14);
     }
-    .callout b{color: var(--text)}
-    .callout span{color: var(--muted)}
+    footer a{ text-decoration: underline; }
+
+    /* Small tweaks */
+    @media (max-width: 520px){
+      .wrap{ padding: 22px 12px 56px; }
+      .top, .stack, footer{ padding-left: 12px; padding-right: 12px; }
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <header class="nav">
-      <a class="brand" href="#top" aria-label="Landing Page Home">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <b>External DSI Calculator</b>
-          <small>Third-party mix helper for pressure washers</small>
-        </div>
-      </a>
+    <!-- HERO -->
+    <header class="top">
+      <div class="badge-row">
+        <div class="pill"><strong>$5</strong>/year</div>
+        <div class="pill">Includes <strong>2 calculators</strong></div>
+        <div class="pill">Fast + simple</div>
+      </div>
 
-      <nav class="links" aria-label="Page navigation">
-        <a href="#how">How it works</a>
-        <a href="#faq">FAQ</a>
-        <a href="#disclaimer">Disclaimer</a>
-      </nav>
+      <h1>Stop guessing your mix.</h1>
+      <p class="sub">
+        Buy once and get the <strong>External Injector Calculator</strong> (pick the best insert)
+        plus the <strong>Regular Downstream Injector Calculator</strong> (batch mix recipes to hit your desired
+        output strength at the gun).
+      </p>
+
+      <div class="cta-row">
+        <a class="btn" href="https://jamprods.gumroad.com/l/msikbz?_gl=1*2abyow*_ga*ODI1NDc2MDYxLjE3NjczNzU2Njg.*_ga_6LJN6D94N6*czE3Njc1NTMxNDkkbzUkZzAkdDE3Njc1NTMxNDkkajYwJGwwJGgw" target="_blank" rel="noopener">
+          Get access
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="btn secondary" href="#whats-included">
+          See what you get
+        </a>
+        <div class="price">Instant access • <strong>$5/year</strong></div>
+      </div>
     </header>
 
-    <main id="top" class="hero">
-      <!-- Left: Main pitch -->
-      <section class="card">
-        <div class="pad">
-          <div class="kicker"><span class="dot"></span> Built to reduce guesswork on the job</div>
+    <!-- STACKED SECTIONS -->
+    <main class="stack">
 
-          <h1>Stop guessing your chemical mix.</h1>
-          <p class="sub">
-            A <b>third-party</b> calculator that helps pressure washers estimate output strength and
-            choose an appropriate dilution range when using <b>external downstream injector</b> setups.
-          </p>
-
-          <div class="callout">
-            <b>Important:</b> <span>This is an independent tool — not an official manufacturer product.</span>
-          </div>
-
-          <ul class="bullets">
-            <li>
-              <span class="check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </span>
-              <div><b>Fast inputs</b><div class="tiny">GPM • stock strength • desired output</div></div>
-            </li>
-            <li>
-              <span class="check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </span>
-              <div><b>Clear output</b><div class="tiny">Recommended dilution range + batch options (where applicable)</div></div>
-            </li>
-            <li>
-              <span class="check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </span>
-              <div><b>Mobile-friendly</b><div class="tiny">Use it on your phone at the job</div></div>
-            </li>
-          </ul>
-
-          <div class="ctaRow">
-            <!-- TODO: Replace href with your Gumroad/checkout link -->
-            <a class="btn" href="https://jamprods.gumroad.com/" id="buyBtn">
-              Get Instant Access
-              <span aria-hidden="true">→</span>
-            </a>
-            <!-- TODO: Replace href with your calculator/demo page if you want -->
-            <a class="btn secondary" href="#how">See how it works</a>
-          </div>
-
-          <div class="hr"></div>
-
-          <p class="fine">
-            <span class="badge">One-time purchase • No subscription</span>
-            <span class="badge">Web-based • No downloads</span>
+      <!-- PROBLEM (blurred chart) -->
+      <section class="card" aria-label="Problem we solve">
+        <div class="inner">
+          <div class="kicker">The problem</div>
+          <h2 class="title">Charts + guesswork = wasted time (and wrong strength).</h2>
+          <p class="copy">
+            Most folks end up hunting charts, doing math, or “close enough”-ing an insert.
+            This bundle makes it simple: pick your tool + GPM + stock % + desired %, and get a clear answer.
           </p>
         </div>
 
-        <div class="priceBox">
-          <div class="priceLine">
-            <div class="price">$9–$15</div>
-            <div class="fine">recommended pricing for one-time access</div>
-          </div>
-          <div class="fine">
-            This tool is intended to help you make informed decisions and reduce trial-and-error.
+        <!-- Keep this image blurred to avoid issues. If you prefer, delete this entire block. -->
+        <div class="blur-wrap">
+          <img class="blur-img" src="XJet_Proportioner_Chart_Web_LG.jpg" alt="Example chart blurred" loading="lazy">
+          <div class="overlay">
+            <div>
+              <b>Tired of reading charts like this?</b>
+              <span>Use the calculators instead: faster, cleaner, and less guessing.</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Right: Proof / what you get -->
-      <aside class="card">
-        <div class="pad">
-          <h2 style="margin:0 0 10px;font-size:20px;">What you get</h2>
-          <p class="sub" style="margin:0 0 14px;">
-            A simple, job-site friendly calculator that supports common external injector-style setups.
-          </p>
-
-          <div class="grid" style="grid-template-columns:1fr; margin-top:0;">
-            <div class="card mini" style="box-shadow:none;">
-              <div class="pad">
-                <h3>Estimate output strength</h3>
-                <p>Quick estimates based on your inputs so you’re not guessing in the field.</p>
-              </div>
-            </div>
-
-            <div class="card mini" style="box-shadow:none;">
-              <div class="pad">
-                <h3>Choose an appropriate dilution range</h3>
-                <p>Helps narrow you down to a reasonable target range to test safely and consistently.</p>
-              </div>
-            </div>
-
-            <div class="card mini" style="box-shadow:none;">
-              <div class="pad">
-                <h3>Batch mix options (where applicable)</h3>
-                <p>Useful for standard downstream workflows when you need simple batch guidance.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="disclaimer" style="margin-top:14px;">
-            <b>Note:</b> Injector performance varies by setup, wear, hose length, elevation, and technique.
-            Use results as a guide and verify on your equipment.
-          </div>
-        </div>
-      </aside>
-    </main>
-
-    <section id="how" class="section card">
-      <div class="pad">
-        <h2>How it works</h2>
-        <p>
-          Enter your machine flow rate (GPM), your stock chemical strength, and your target output strength.
-          The calculator returns an estimated dilution range to help you decide what’s most appropriate for your setup.
-        </p>
-
-        <div class="grid">
-          <div class="card mini" style="box-shadow:none;">
-            <div class="pad">
-              <h3>1) Enter your setup</h3>
-              <p>GPM + stock strength (example: 12.5%)</p>
-            </div>
-          </div>
-          <div class="card mini" style="box-shadow:none;">
-            <div class="pad">
-              <h3>2) Choose target output</h3>
-              <p>Example: 1%–2% at the gun (your preference / job need)</p>
-            </div>
-          </div>
-          <div class="card mini" style="box-shadow:none;">
-            <div class="pad">
-              <h3>3) Get recommendations</h3>
-              <p>Use the output as a guide, then verify with your real-world setup</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="faq" class="section card">
-      <div class="pad">
-        <h2>FAQ</h2>
-        <div class="faq">
-          <details>
-            <summary>Is this an official manufacturer calculator? <span>+</span></summary>
-            <p>No. This is an independent, third-party tool built to help pressure washers reduce guesswork.</p>
-          </details>
-
-          <details>
-            <summary>Can you mention brands on this page? <span>+</span></summary>
-            <p>We avoid logos and “official” language. Any brand names, if referenced elsewhere, should only be used to describe compatibility and identification.</p>
-          </details>
-
-          <details>
-            <summary>Do I need to download anything? <span>+</span></summary>
-            <p>No downloads. It’s web-based and built for mobile use.</p>
-          </details>
-
-          <details>
-            <summary>Will the results be perfect for every rig? <span>+</span></summary>
-            <p>No. Real-world performance varies. The tool is meant to provide a solid starting point and reduce trial-and-error.</p>
-          </details>
-        </div>
-
-        <div class="ctaRow" style="margin-top:16px;">
-          <!-- TODO: Replace with your checkout link -->
-          <a class="btn" href="https://jamprods.gumroad.com/" >
-            Get Instant Access
-            <span aria-hidden="true">→</span>
-          </a>
-          <!-- TODO: Replace with your directory page -->
-          <a class="btn secondary" href="#" id="directoryLink">Pressure Washing Parts Directory</a>
-        </div>
-
-        <p class="tiny" style="margin-top:10px;">
-          Tip: set the directory link once you know your final URL (ex: /petooldirectory).
-        </p>
-      </div>
-    </section>
-
-    <section id="disclaimer" class="section card">
-      <div class="pad">
-        <h2>Trademark & Affiliation Disclaimer</h2>
-        <div class="disclaimer">
-          <p style="margin:0;color:var(--muted);">
-            <b>Disclaimer:</b> This calculator is an independent, third-party tool and is <b>not affiliated with,
-            endorsed by, or sponsored by any injector manufacturer</b>.
-            Any product names, if referenced, are used solely for compatibility and identification purposes.
+      <!-- WHAT'S INCLUDED -->
+      <section class="card" id="whats-included" aria-label="What you get">
+        <div class="inner">
+          <div class="kicker">What you get</div>
+          <h2 class="title">Two calculators (one purchase).</h2>
+          <p class="copy">
+            The main win is the <strong>External Injector Calculator</strong> (insert picker),
+            and you also get the <strong>Regular Downstream Injector Calculator</strong> to help you
+            dilute your chem correctly for your injector and desired output at the gun.
           </p>
         </div>
+      </section>
 
-        <p class="tiny" style="margin-top:10px;">
-          We do not use manufacturer logos, official branding, or claims of endorsement.
-        </p>
-      </div>
-    </section>
+      <!-- EXTERNAL DSI SCREENSHOT -->
+      <section class="card" aria-label="External injector calculator preview">
+        <div class="inner">
+          <div class="kicker">Calculator #1</div>
+          <h2 class="title">External Injector Calculator</h2>
+          <p class="copy">
+            Choose tool type + machine GPM, enter stock % and desired output %, then get the recommended insert.
+          </p>
+        </div>
+        <div class="img-wrap">
+          <img class="img" src="external dsi page.jpg" alt="External injector calculator screenshot" loading="lazy">
+        </div>
+      </section>
 
-    <footer class="footer">
-      <div>
-        © <span id="year"></span> External DSI Calculator. All rights reserved.
-      </div>
-      <div class="tiny">
-        Built for contractors. Use results as guidance and verify for your equipment and safety practices.
-      </div>
-    </footer>
-  </div>
-
-  <script>
-    // year
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    // TODO: Set these two links once you know them.
-    // 1) Your checkout link (Gumroad or your own)
-    // 2) Your parts directory link
-    //
-    // Example:
-    // document.getElementById("buyBtn").href = "https://jamprods.gumroad.com/l/msikbz";
-    // document.getElementById("directoryLink").href = "https://yourdomain.com/petooldirectory";
-  </script>
-</body>
-</html>
+      <!-- REGULAR DSI SCREENSHOT -->
+      <section class="card" aria-label="Regular downstream injector calculator preview">
+        <div class="inner">
+          <div class="kicker">Calculator #2</div>
+          <h2 class="title">Regular Downstream Injector Calculator</h2>
+          <p class="copy">
+            Get batch mix recipes (stock + water) so your bucket/tank hits the output strength you want at the gun.
+          </p>
+        </div>
+        <div class="img-wrap">
+          <img class="img" src="dsi page.jpg" alt="Downstream injector dilution calculator screenshot" loading="lazy">
+        </div>
+      </
