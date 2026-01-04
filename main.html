@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Downstream Injector Calculator Bundle</title>
-  <meta name="description" content="External injector + regular downstream injector calculators. $5/year access." />
+  <meta name="description" content="External injector insert picker + regular downstream batch-mix calculator. $5/year." />
 
   <style>
     :root{
@@ -30,6 +30,7 @@
         linear-gradient(180deg,#070b10,#0b0f14);
       color:var(--text);
       -webkit-font-smoothing:antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     a{ color:inherit; text-decoration:none; }
@@ -39,8 +40,6 @@
       margin:0 auto;
       padding:28px 16px 70px;
     }
-
-    /* ---------- HERO ---------- */
 
     .top{
       display:flex;
@@ -53,6 +52,7 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      align-items:center;
     }
 
     .pill{
@@ -62,6 +62,7 @@
       border:1px solid rgba(154,176,208,.25);
       background:rgba(18,24,36,.55);
       color:var(--muted);
+      backdrop-filter: blur(6px);
     }
 
     .pill strong{ color:var(--text); }
@@ -70,10 +71,11 @@
       margin:0;
       font-size:clamp(26px,3.2vw,40px);
       letter-spacing:-.02em;
+      line-height:1.1;
     }
 
     .sub{
-      max-width:70ch;
+      max-width:72ch;
       font-size:15px;
       line-height:1.55;
       color:var(--muted);
@@ -95,10 +97,17 @@
       border:1px solid rgba(99,179,255,.35);
       background:linear-gradient(180deg,rgba(99,179,255,.22),rgba(99,179,255,.12));
       box-shadow:0 10px 24px rgba(0,0,0,.35);
-      transition:transform .08s ease;
+      transition:transform .08s ease, border-color .2s ease;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
     }
 
-    .btn:hover{ transform:translateY(-1px); }
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color: rgba(99,179,255,.5);
+    }
 
     .btn.secondary{
       background:rgba(18,24,36,.6);
@@ -112,8 +121,6 @@
     }
 
     .price strong{ color:var(--warn); }
-
-    /* ---------- STACK ---------- */
 
     .stack{
       display:flex;
@@ -148,6 +155,7 @@
     .title{
       margin:0;
       font-size:18px;
+      letter-spacing:-.01em;
     }
 
     .copy{
@@ -170,62 +178,33 @@
       border-radius:14px;
       border:1px solid rgba(154,176,208,.12);
       display:block;
+      background: rgba(0,0,0,.15);
     }
-
-    /* ---------- BLURRED CHART ---------- */
-
-    .blur-wrap{
-      position:relative;
-      padding:12px;
-      overflow:hidden;
-      background:rgba(0,0,0,.18);
-      border-top:1px solid rgba(154,176,208,.14);
-    }
-
-    .blur-img{
-      width:100%;
-      border-radius:14px;
-      border:1px solid rgba(154,176,208,.12);
-      filter:blur(14px) saturate(.9);
-      opacity:.95;
-      display:block;
-    }
-
-    .overlay{
-      position:absolute;
-      inset:12px;
-      border-radius:14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      background:linear-gradient(180deg,rgba(11,15,20,.05),rgba(11,15,20,.75));
-      border:1px solid rgba(154,176,208,.14);
-    }
-
-    .overlay-box{
-      max-width:520px;
-      text-align:center;
-      padding:14px;
-      border-radius:14px;
-      background:rgba(10,14,20,.6);
-      border:1px solid rgba(154,176,208,.16);
-      backdrop-filter:blur(6px);
-    }
-
-    /* ---------- FOOTER ---------- */
 
     footer{
       padding:22px 18px 0;
       font-size:12px;
-      color:rgba(154,176,208,.75);
-      line-height:1.6;
+      color:rgba(154,176,208,.78);
+      line-height:1.65;
     }
 
     footer .line{
       height:1px;
       background:rgba(154,176,208,.14);
       margin-top:18px;
+    }
+
+    .disclaimer-box{
+      margin-top:14px;
+      padding:14px;
+      border-radius:14px;
+      border:1px dashed rgba(154,176,208,.25);
+      background: rgba(18,24,36,.45);
+      color: rgba(231,238,252,.88);
+    }
+
+    .disclaimer-box strong{
+      color: var(--text);
     }
 
     @media(max-width:520px){
@@ -247,13 +226,13 @@
       <h1>Stop guessing your mix.</h1>
 
       <p class="sub">
-        Your annual access includes the <strong>External Injector Calculator</strong>
-        (pick the best insert) plus the <strong>Regular Downstream Injector Calculator</strong>
+        Your annual access includes the <strong>External Injector Calculator</strong> (pick the best insert)
+        plus the <strong>Regular Downstream Injector Calculator</strong>
         to help you hit your desired output strength at the gun.
       </p>
 
       <div class="cta-row">
-        <a class="btn" href="https://jamprods.gumroad.com/l/msikbz?_gl=1*2abyow*_ga*ODI1NDc2MDYxLjE3NjczNzU2Njg.*_ga_6LJN6D94N6*czE3Njc1NTMxNDkkbzUkZzAkdDE3Njc1NTMxNDkkajYwJGwwJGgw" target="_blank">
+        <a class="btn" href="https://jamprods.gumroad.com/l/msikbz?_gl=1*2abyow*_ga*ODI1NDc2MDYxLjE3NjczNzU2Njg.*_ga_6LJN6D94N6*czE3Njc1NTMxNDkkbzUkZzAkdDE3Njc1NTMxNDkkajYwJGwwJGgw" target="_blank" rel="noopener">
           Get access →
         </a>
 
@@ -266,6 +245,7 @@
         </div>
       </div>
     </header>
+
     <main class="stack">
 
       <section class="card">
@@ -281,24 +261,8 @@
             That usually means wasted time and inconsistent strength.
           </p>
         </div>
-
-        <div class="blur-wrap">
-          <img
-            class="blur-img"
-            src="./proportioner-chart.jpg"
-            alt="Proportioner chart example (blurred)"
-            loading="lazy"
-          />
-
-          <div class="overlay">
-            <div class="overlay-box">
-              <strong>Tired of charts like this?</strong>
-              <br />
-              <span>The calculators handle the math for you.</span>
-            </div>
-          </div>
-        </div>
       </section>
+
       <section class="card" id="whats-included">
         <div class="inner">
           <div class="kicker">What's included</div>
@@ -315,78 +279,67 @@
 
           <p class="copy">
             You also get the <strong>Regular Downstream Injector Calculator</strong>,
-            which gives you batch mix amounts so your diluted chemical
-            hits the strength you want at the gun.
+            which gives you batch mix amounts so your diluted chemical hits the strength you want at the gun.
           </p>
         </div>
       </section>
+
       <section class="card">
         <div class="inner">
           <div class="kicker">Calculator #1</div>
 
-          <h2 class="title">
-            External Injector Calculator
-          </h2>
+          <h2 class="title">External Injector Calculator</h2>
 
           <p class="copy">
-            Select your external injector type, machine GPM,
-            stock chemical strength, and desired output strength.
-            The calculator recommends the closest insert.
+            Select your external injector type, machine GPM, stock chemical strength,
+            and desired output strength. The calculator recommends the closest insert.
           </p>
         </div>
 
         <div class="img-wrap">
           <img
             class="img"
-            src="./external-dsi-page.jpg"
+            src="./external dsi page.jpg"
             alt="External downstream injector calculator screenshot"
             loading="lazy"
           />
         </div>
       </section>
+
       <section class="card">
         <div class="inner">
           <div class="kicker">Calculator #2</div>
 
-          <h2 class="title">
-            Regular Downstream Injector Calculator
-          </h2>
+          <h2 class="title">Regular Downstream Injector Calculator</h2>
 
           <p class="copy">
-            Enter your injector ratio, stock chemical strength,
-            and desired output strength.
-            The calculator shows how much chemical and water to mix
-            so you hit the correct strength at the gun.
+            Enter your injector ratio, stock chemical strength, and desired output strength.
+            The calculator shows how much chemical and water to mix so you hit the correct strength at the gun.
           </p>
         </div>
 
         <div class="img-wrap">
           <img
             class="img"
-            src="./dsi-page.jpg"
+            src="./dsi page.jpg"
             alt="Regular downstream injector calculator screenshot"
             loading="lazy"
           />
         </div>
       </section>
+
       <section class="card">
         <div class="inner">
           <div class="kicker">Get access</div>
 
-          <h2 class="title">
-            Simple. Clear. $5 per year.
-          </h2>
+          <h2 class="title">Simple. Clear. $5 per year.</h2>
 
           <p class="copy">
             Get immediate access to both calculators and stop guessing your mixes.
           </p>
 
           <div class="cta-row">
-            <a
-              class="btn"
-              href="https://jamprods.gumroad.com/l/msikbz?_gl=1*2abyow*_ga*ODI1NDc2MDYxLjE3NjczNzU2Njg.*_ga_6LJN6D94N6*czE3Njc1NTMxNDkkbzUkZzAkdDE3Njc1NTMxNDkkajYwJGwwJGgw"
-              target="_blank"
-            >
+            <a class="btn" href="https://jamprods.gumroad.com/l/msikbz?_gl=1*2abyow*_ga*ODI1NDc2MDYxLjE3NjczNzU2Njg.*_ga_6LJN6D94N6*czE3Njc1NTMxNDkkbzUkZzAkdDE3Njc1NTMxNDkkajYwJGwwJGgw" target="_blank" rel="noopener">
               Get access →
             </a>
 
@@ -398,21 +351,22 @@
       </section>
 
     </main>
-
     <footer>
       <div class="line"></div>
 
-      <p>
-        Disclaimer: This calculator is an independent tool and is not affiliated
-        with, endorsed by, or sponsored by any pressure washing equipment
-        manufacturer. All product names are used for identification purposes only.
-      </p>
+      <div class="disclaimer-box">
+        <strong>Trademark &amp; Affiliation Disclaimer</strong><br><br>
+        <strong>Disclaimer:</strong> This calculator is an independent, third-party tool and is <strong>not</strong>
+        affiliated with, endorsed by, or sponsored by any injector or pressure washing equipment manufacturer.
+        Any product names, if referenced, are used solely for compatibility and identification purposes.
+        <br><br>
+        We do not use manufacturer logos, official branding, or claims of endorsement.
+      </div>
 
-      <p>
-        Results are estimates only. Actual chemical draw and output strength may
-        vary based on injector condition, hose length, nozzle selection, machine
-        performance, temperature, and chemical viscosity. Always verify results
-        on your own equipment before use.
+      <p style="margin-top:12px;">
+        <strong>Results Disclaimer:</strong> Results are estimates only. Actual chemical draw and output strength may vary
+        based on injector condition, hose length, nozzle selection, machine performance, temperature, and chemical viscosity.
+        Always verify results on your own equipment before use.
       </p>
     </footer>
 
